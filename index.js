@@ -3,9 +3,11 @@ import router from "./src/routes/index.js";
 import connectDB from "./src/configs/db.js";
 import { HOST, PORT } from "./src/configs/enviroments.js";
 import errorHandler from "./src/middlewares/errorHandle.js";
+import cors from 'cors'
 
 const app = express();
 
+app.use(cors({ origin: 'http://localhost:5173', credentials: true }));
 
 app.use(express.json());
 
