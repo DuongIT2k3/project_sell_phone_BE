@@ -1,4 +1,4 @@
-import createError from "../utils/error";
+import createError from "../utils/error.js";
 
 const validBodyRequest = (schema) => (req, res, next) => {
     try{
