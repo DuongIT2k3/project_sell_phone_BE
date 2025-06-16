@@ -4,13 +4,7 @@ dotenv.config({
     path: ".env",
     debug: true,
     encoding: "utf8",
-    silent: true,
-    defaults: true,
-    ignoreProcessEnv: true,
-    expand: true,
-    assignToProcessEnv: true,
-    overrideProcessEnv: true,
-    
+    override: true,
 })
 
 export const { DB_URI, HOST, PORT } = process.env
