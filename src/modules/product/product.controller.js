@@ -1,7 +1,7 @@
-import Product from "../models/Product.js"
-import handleAsync from "../utils/handleAsync.js"
-import createResponse from "../utils/response.js"
-import createError from "../utils/error.js"
+import Product from "./product.model.js"
+import handleAsync from "../../common/utils/handleAsync.js"
+import createResponse from "../../common/utils/response.js"
+import createError from "../../common/utils/error.js"
 
 export const createProduct = handleAsync( async (req, res, next) => {
     const existing = await Product.findOne({ title: req.body.title })

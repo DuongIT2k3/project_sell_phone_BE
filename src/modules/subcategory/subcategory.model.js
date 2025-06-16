@@ -1,6 +1,6 @@
 import mongoose, { Schema } from "mongoose";
 
-const categorySchema = new Schema(
+const subCategorySchema = new Schema(
     {
         title: {
             type: String,
@@ -18,6 +18,11 @@ const categorySchema = new Schema(
         deletedAt: {
             type: Date,
             default: null
+        },
+        categoryParentId: {
+            type: Schema.Types.ObjectId,
+            ref: "Category",
+            required: true,
         }
     },
     {
@@ -26,4 +31,4 @@ const categorySchema = new Schema(
     }
 )
 
-export default mongoose.model("Category", categorySchema)
+export default mongoose.model("SubCategory", subCategorySchema)
