@@ -1,5 +1,3 @@
-import createError from "../utils/error.js";
-
 const validBodyRequest = (schema) => (req, res, next) => {
     try{
         const data = schema.parse(req.body);
