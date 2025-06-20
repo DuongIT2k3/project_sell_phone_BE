@@ -22,7 +22,7 @@ export const getDetailCategory = handleAsync(async (req, res, next) => {
     if(!data){
         next(createError(404, MESSAGES.CATEGORY.NOT_FOUND))
     }
-    return res.json(createResponse(true, 200, MESSAGES.CATEGORY.GET_BY_ID_SUCCESS, data))
+    return res.json(createResponse(true, 200, MESSAGES.CATEGORY.GET_SUCCESS, data))
 })
 
 export const updateCategory = handleAsync(async (req, res, next) => {
