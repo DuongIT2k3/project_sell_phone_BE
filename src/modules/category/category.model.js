@@ -2,7 +2,7 @@ import mongoose, { Schema } from "mongoose";
 
 const categorySchema = new Schema(
     {
-        name: {
+        title: {
             type: String,
             unique: true,
             required: true,
@@ -17,6 +17,10 @@ const categorySchema = new Schema(
         },
         deletedAt: {
             type: Date,
+            default: null
+        },
+        logoUrl: {
+            type: String,
             default: null
         }
     },
