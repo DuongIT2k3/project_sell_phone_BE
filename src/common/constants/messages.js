@@ -114,6 +114,22 @@ const MESSAGES = {
 		NOT_FOUND: "Không tìm thấy thuộc tính",
 		HAS_PRODUCTS: "Thuộc tính này có sản phẩm, không thể xóa",
 	},
+	ATTRIBUTE_VALUE: {
+		GET_SUCCESS: "Lấy danh sách giá trị thuộc tính thành công",
+		GET_BY_ID_SUCCESS: "Lấy thông tin giá trị thuộc tính thành công",
+		CREATE_SUCCESS: "Tạo giá trị thuộc tính thành công",
+		UPDATE_SUCCESS: "Cập nhật giá trị thuộc tính thành công",
+		DELETE_SUCCESS: "Xóa giá trị thuộc tính thành công",
+		SOFT_DELETE_SUCCESS: "Xóa mềm giá trị thuộc tính thành công",
+		RESTORE_SUCCESS: "Khôi phục giá trị thuộc tính thành công",
+		CREATE_ERROR: "Lỗi khi tạo giá trị thuộc tính",
+		UPDATE_ERROR: "Lỗi khi cập nhật giá trị thuộc tính",
+		DELETE_ERROR: "Lỗi khi xóa giá trị thuộc tính",
+		SOFT_DELETE_FAILED: "Xóa mềm giá trị thuộc tính thất bại",
+		RESTORE_FAILED: "Khôi phục giá trị thuộc tính thất bại",
+		CREATE_ERROR_EXISTS: "Giá trị thuộc tính tồn tại",
+		NOT_FOUND: "Không tìm thấy giá trị thuộc tính",
+	},
 
 	CART: {
 		GET_SUCCESS: "Lấy giỏ hàng thành công",
