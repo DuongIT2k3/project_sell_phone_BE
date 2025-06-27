@@ -8,7 +8,6 @@ const attributeRoutes = Router();
 attributeRoutes.get("/",getAllAttributes);
 attributeRoutes.get("/:id", getAttributeById);
 
-attributeRoutes.use();
 attributeRoutes.delete("/delete/:id", deleteAttribute);
 attributeRoutes.patch("/soft-delete/:id", softDeleteAttribute);
 attributeRoutes.patch("/restore/:id", restoreAttribute);

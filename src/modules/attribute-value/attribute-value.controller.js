@@ -2,10 +2,15 @@ import MESSAGES from "../../common/constants/messages.js";
 import createError from "../../common/utils/error";
 import handleAsync from "../../common/utils/handleAsync";
 import createResponse from "../../common/utils/response";
+import Attribute from "../attribute/attribute.model.js";
 import AttributeValue from "./attribute-value.model.js";
 
 export const getAttributeValuesByAttributeId = handleAsync(async (req, res, next) => {
     const { attributeId } = req.params;
+    const attribute = await Attribute.findById(attributeId);
+    if(!attribute) {
+        return next(createError(404, MESSAGES.ATTRIBUTE.NOT_FOUND));
+    }
     const attributeValues = await AttributeValue.find({ attributeId });
     if (!attributeValues || attributeValues.length === 0) {
         return next(createError(404, MESSAGES.ATTRIBUTE_VALUE.NOT_FOUND));
@@ -14,6 +19,14 @@ export const getAttributeValuesByAttributeId = handleAsync(async (req, res, next
 });
 export const createAttributeValue = handleAsync(async (req, res, next) => {
     const { attributeId } = req.params;
+    const { value, codeValue } = req.body;
+    const attribute = await Attribute.findById(attributeId);
+    if (!attribute) {
+        return next(createError(404, MESSAGES.ATTRIBUTE.NOT_FOUND));
+    }
+    if(!value || !codeValue) {
+        return next(createError(400, MESSAGES.ATTRIBUTE_VALUE.MISSING_FIELDS));    
+    }
     const existingAttributeValue = await AttributeValue.findOne({
         attributeId,
         value: req.body.value
@@ -74,7 +87,9 @@ export const restoreAttributeValue = handleAsync(async (req, res, next) => {
 });
 export const getAttributeValuesByAttributeCode = handleAsync(async (req, res, next) => {
     const { attributeCode } = req.params;
-    const attributeValues = await AttributeValue.find({ attributeCode });
+    const attribute = await ProductAttribute.findOne({ attributeCode });
+    if (!attribute) return next(createError(404, MESSAGES.ATTRIBUTE.NOT_FOUND));
+    const attributeValues = await AttributeValue.find({ attributeId: attribute._id });
     if (!attributeValues || attributeValues.length === 0) {
         return next(createError(404, MESSAGES.ATTRIBUTE_VALUE.NOT_FOUND));
     }

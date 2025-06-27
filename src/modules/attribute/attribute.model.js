@@ -16,6 +16,19 @@ const attributeSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+    type: {
+      type: String,
+      required: true,
+      enum: ['string', 'number','enum']
+    },
+    enumValues: {
+      type: [String],
+      default: [],
+    },
+    isActive: {
+      type: Boolean,
+      default: true,
+    },
     deletedAt:{
       type: Date, 
       default: null,

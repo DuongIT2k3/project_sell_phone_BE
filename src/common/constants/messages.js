@@ -113,6 +113,8 @@ const MESSAGES = {
 		CREATE_ERROR_EXISTS: "Thuộc tính đã tồn tại",
 		NOT_FOUND: "Không tìm thấy thuộc tính",
 		HAS_PRODUCTS: "Thuộc tính này có sản phẩm, không thể xóa",
+		MISSING_FIELDS: "Thiếu các trường bắt buộc",
+		IN_USE: "Thuộc tính này đang được sử dụng bởi các giá trị thuộc tính, không thể xóa",
 	},
 	ATTRIBUTE_VALUE: {
 		GET_SUCCESS: "Lấy danh sách giá trị thuộc tính thành công",
@@ -129,6 +131,7 @@ const MESSAGES = {
 		RESTORE_FAILED: "Khôi phục giá trị thuộc tính thất bại",
 		CREATE_ERROR_EXISTS: "Giá trị thuộc tính tồn tại",
 		NOT_FOUND: "Không tìm thấy giá trị thuộc tính",
+		MISSING_FIELDS: "Thiếu các trường bắt buộc",
 	},
 
 	CART: {
