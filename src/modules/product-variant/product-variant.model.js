@@ -7,44 +7,32 @@ const productVariantSchema = new mongoose.Schema(
       ref: "Product",
       required: true,
     },
-    attributeValues: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "AttributeValue",
-        required: true,
-      },
-    ],
     price: {
       type: Number,
       required: true,
+      min: 0,
     },
     oldPrice: {
       type: Number,
-    },
-    soldCount: {
-      type: Number,
-    },
-    specifications: {
-      type: Object,
+      default: 0,
+      min: 0,
     },
     stock: {
       type: Number,
-      required: true,
+      default: 0,
+      min: 0,
+    },
+    soldCount: {
+      type: Number,
+      default: 0,
+      min: 0,
     },
     sku: {
       type: String,
       required: true,
       unique: true,
     },
-    deletedAt: {
-      type: Date,
-      default: null,
-    },
-    thumbnail: {
-      type: String,
-      required: true,
-    },
-    images: {
+    imageUrls: {
       type: [String],
       default: [],
     },
