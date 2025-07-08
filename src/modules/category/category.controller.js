@@ -33,7 +33,7 @@ export const updateCategory = handleAsync(async (req, res, next) => {
     if(data){
         return res.json(createResponse(true, 200, MESSAGES.CATEGORY.UPDATE_SUCCESS, data))
     }
-    next(createError(false, 404, MESSAGES.CATEGORY.UPDATE_ERROR))
+    next(createError(false, 404, MESSAGES.CATEGORY.UPDATE_ERROR)) 
 })
 
 export const deleteCategory = handleAsync(async (req, res, next) => {

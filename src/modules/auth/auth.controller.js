@@ -7,12 +7,13 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { JWT_SECRET_KEY, JWT_EXPIRES_IN, JWT_SECRET_KEY_FOR_EMAIL, JWT_EXPIRES_IN_FOR_EMAIL } from "../../common/configs/environments.js";
 import sendEmail from "../../common/utils/mailSender.js";
+import { createCartForUser } from "../cart/cart.service.js";
 
 export const authRegister = handleAsync(async (req,res,next) => {
     const { email, password } = req.body;
     const existing = await User.findOne({ email });
-    if (existing) return next(createError(400, MESSAGES.AUTH.EMAIL_ALREADY_EXISTS));
 
+    if (existing) return next(createError(400, MESSAGES.AUTH.EMAIL_ALREADY_EXISTS));
     const salt = bcrypt.genSaltSync(10);
     const hash = bcrypt.hashSync(password, salt);
 
@@ -22,6 +23,9 @@ export const authRegister = handleAsync(async (req,res,next) => {
         role: "member",
     });
     if(!newUser) return next(createError(500, MESSAGES.AUTH.REGISTER_FAILED));
+
+    const cart = await createCartForUser(newUser._id)
+    console.log(cart);
     
     const verifyEmailToken = jwt.sign(
         { id: newUser._id },
@@ -54,6 +58,11 @@ export const authLogin = handleAsync(async (req, res, next) => {
     if (!existing) return next(createError(400, MESSAGES.AUTH.USER_NOT_EXISTS));
     const isMatch = bcrypt.compareSync(password, existing.password);
     if(!isMatch) return next(createError(400, MESSAGES.AUTH.LOGIN_FAILED));
+
+    const isVerifyEmail = existing.isVerifyEmail || false;
+    if(!isVerifyEmail){
+        return next(createError(400, MESSAGES.AUTH.EMAIL_NOT_VERIFIED))
+    }
 
     const accessToken = jwt.sign(
         { id: existing._id },

@@ -2,44 +2,91 @@ import mongoose from "mongoose";
 
 const productSchema = new mongoose.Schema(
   {
-    id: {
-      type: String,
-      required: true,
-      unique: true,
-    },
     title: {
       type: String,
       required: true,
     },
-    price: {
-      type: Number,
-      required: true,
+    thumbnail: {
+      type: String,
+    },
+    images: {
+      type: [String],
+      default: [],
     },
     description: {
       type: String,
     },
-    rating: {
-      type: Number,
-      default: 0,
+    shortDescription: {
+      type: String,
     },
-    stock: {
+    specifications: {
+      type: Object,
+    },
+    priceDefault: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+    soldCount: {
       type: Number,
       default: 0,
+      min: 0,
     },
     brand: {
-      type: String,
-    },
-    category: {
-      type: String,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Brand",
       required: true,
     },
-    thumbnail: {
+    subCategory: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "SubCategory",
+      required: true,
+    },
+    slug: {
+      type: String,
+      unique: true,
+    },
+    averageRating: {
+      type: Number,
+      default: 0,
+      min: 0,
+      max: 5,
+    },
+    ratingCount: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+    seoTitle: {
+      type: String,
+    },
+    seoDescription: {
+      type: String,
+    },
+    tags: {
       type: [String],
       default: [],
+    },
+    isActive: {
+      type: Boolean,
+      default: true,
+    },
+    stockTotal: {
+      type: Number,
+      default: 0,
+      min: 0,
     },
     deletedAt: {
       type: Date,
       default: null,
+    },
+    deletedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
+    updatedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
     },
   },
   {
