@@ -7,6 +7,14 @@ const productVariantSchema = new mongoose.Schema(
       ref: "Product",
       required: true,
     },
+    color: {
+      type: String,
+      required: true, // e.g., "Red", "Black"
+    },
+    capacity: {
+      type: String,
+      required: true, // e.g., "128GB", "256GB"
+    },
     price: {
       type: Number,
       required: true,
@@ -36,6 +44,10 @@ const productVariantSchema = new mongoose.Schema(
       type: [String],
       default: [],
     },
+    deletedAt: {
+      type: Date,
+      default: null,
+    },
   },
   {
     timestamps: true,
@@ -44,5 +56,4 @@ const productVariantSchema = new mongoose.Schema(
 );
 
 const ProductVariant = mongoose.model("ProductVariant", productVariantSchema);
-
 export default ProductVariant;

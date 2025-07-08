@@ -19,48 +19,53 @@ export const createProduct = handleAsync( async (req, res, next) => {
     return res.json(createResponse(true, 201, MESSAGES.PRODUCT.CREATE_SUCCESS, data))
 })
 
-export const getListProduct = handleAsync(async (req,res,next) => {
-    const { search, subCategory, brand, minPrice, maxPrice, sortBy = "createdAt", sortOrder = "desc", page = 1, limit = 10,} = req.query;
-    const query = { deletedAt: null, isActive: true}
-    if(search){
-        query.$text = { $search: search}
-    }
-    if(brand && mongoose.Types.ObjectId.isValid(brand)) {
-        query.brand = brand
-    }
-    if(subCategory && mongoose.Types.ObjectId.isValid(subCategory)) {
-        query.subCategory = subCategory
-    }
-    if(minPrice || maxPrice){
-        query.priceDefault = {};
-        if(minPrice) query.priceDefault.$gte = Number(minPrice);
-        if(maxPrice) query.priceDefault.$lte = Number(maxPrice);
-    }
-    const sortOptions = {};
-    const validSortFields = ["priceDefault", "createdAt", "averageRating", "soldCount"];
-    if(validSortFields.includes(sortBy)) {
-        sortOptions[sortBy] = sortOrder === "asc" ? 1 : -1;
-    } else {
-        sortOptions.createdAt = -1;
-    }
-    const pageNum = parseInt(page, 10) || 1;
-    const limitNum = parseInt(limit, 10) || 10;
-    const skip = (pageNum - 1) * limitNum;
-    const [products, total] = await Promise.all([
-        Product.find(query).sort(sortOptions).skip(skip).limit(limitNum), Product.countDocuments(query),
-    ]);
-    if(!products || products.length === 0) {
-        return next(createError(404, MESSAGES.PRODUCT.NOT_FOUND))
-    }
-    const totalPages = Math.ceil(total / limitNum);
-    const data = {
-        total,
-        page: pageNum,
-        limit: limitNum,
-        totalPages,
-    };
-    return res.json(createResponse(true, 200, MESSAGES.PRODUCT.GET_SUCCESS, {products, data}))
-})
+export const getListProduct = handleAsync(async (req, res, next) => {
+  const { search, brand, subCategory, minPrice, maxPrice, color, capacity, sortBy = "createdAt", sortOrder = "desc", page = 1, limit = 10 } = req.query;
+  const query = { deletedAt: null, isActive: true };
+  if (search) query.$text = { $search: search };
+  if (brand && mongoose.Types.ObjectId.isValid(brand)) query.brand = brand;
+  if (subCategory && mongoose.Types.ObjectId.isValid(subCategory)) query.subCategory = subCategory;
+  if (minPrice || maxPrice) {
+    query.priceDefault = {};
+    if (minPrice) query.priceDefault.$gte = Number(minPrice);
+    if (maxPrice) query.priceDefault.$lte = Number(maxPrice);
+  }
+
+  const pageNum = parseInt(page, 10) || 1;
+  const limitNum = parseInt(limit, 10) || 10;
+  const skip = (pageNum - 1) * limitNum;
+
+  
+  const aggregateQuery = [
+    { $match: query },
+    {
+      $lookup: {
+        from: "productvariants",
+        localField: "_id",
+        foreignField: "productId",
+        as: "variants",
+      },
+    },
+    { $match: color || capacity ? { "variants": { $elemMatch: { color: color || { $exists: true }, capacity: capacity || { $exists: true }, deletedAt: null } } } : {} },
+    { $project: { deletedAt: 0, deletedBy: 0, updatedBy: 0 } },
+    { $sort: { [sortBy]: sortOrder === "asc" ? 1 : -1 } },
+    { $skip: skip },
+    { $limit: limitNum },
+  ];
+
+  const [products, total] = await Promise.all([
+    Product.aggregate(aggregateQuery).exec(),
+    Product.countDocuments(query),
+  ]);
+
+  if (!products || products.length === 0) {
+    return next(createError(404, "No products found"));
+  }
+
+  const totalPages = Math.ceil(total / limitNum);
+  const meta = { total, page: pageNum, limit: limitNum, totalPages };
+  return res.json(createResponse(true, 200, MESSAGES.PRODUCT.GET_SUCCESS, { products, meta }));
+});
 
 export const getDetailProduct = handleAsync(async (req, res, next) => {
     const { id } = req.params
