@@ -1,97 +1,161 @@
+import mongoose from "mongoose";
 import MESSAGES from "../../common/constants/messages.js";
-import createError from "../../common/utils/error";
-import handleAsync from "../../common/utils/handleAsync";
-import createResponse from "../../common/utils/response";
+import createError from "../../common/utils/error.js";
+import handleAsync from "../../common/utils/handleAsync.js";
+import createResponse from "../../common/utils/response.js";
 import Attribute from "../attribute/attribute.model.js";
 import AttributeValue from "./attribute-value.model.js";
 
 export const getAttributeValuesByAttributeId = handleAsync(async (req, res, next) => {
-    const { attributeId } = req.params;
-    const attribute = await Attribute.findById(attributeId);
-    if(!attribute) {
-        return next(createError(404, MESSAGES.ATTRIBUTE.NOT_FOUND));
-    }
-    const attributeValues = await AttributeValue.find({ attributeId });
-    if (!attributeValues || attributeValues.length === 0) {
-        return next(createError(404, MESSAGES.ATTRIBUTE_VALUE.NOT_FOUND));
-    }
-    return res.json(createResponse(true, 200, MESSAGES.ATTRIBUTE_VALUE.GET_SUCCESS, attributeValues));
+  const { attributeId } = req.params;
+  if (!mongoose.Types.ObjectId.isValid(attributeId)) {
+    return next(createError(400, MESSAGES.ATTRIBUTE.INVALID_ID));
+  }
+  const attribute = await Attribute.findOne({ _id: attributeId, deletedAt: null });
+  if (!attribute) {
+    return next(createError(404, MESSAGES.ATTRIBUTE.NOT_FOUND));
+  }
+  const attributeValues = await AttributeValue.find({ attributeId, deletedAt: null }).select(
+    "attributeId value valueCode isActive"
+  );
+  if (!attributeValues || attributeValues.length === 0) {
+    return next(createError(404, MESSAGES.ATTRIBUTE_VALUE.NOT_FOUND));
+  }
+  return res.json(createResponse(true, 200, MESSAGES.ATTRIBUTE_VALUE.GET_SUCCESS, attributeValues));
 });
+
 export const createAttributeValue = handleAsync(async (req, res, next) => {
-    const { attributeId } = req.params;
-    const { value, codeValue } = req.body;
-    const attribute = await Attribute.findById(attributeId);
-    if (!attribute) {
-        return next(createError(404, MESSAGES.ATTRIBUTE.NOT_FOUND));
-    }
-    if(!value || !codeValue) {
-        return next(createError(400, MESSAGES.ATTRIBUTE_VALUE.MISSING_FIELDS));    
-    }
+  const { attributeId } = req.params;
+  const { value, valueCode } = req.body;
+  if (!mongoose.Types.ObjectId.isValid(attributeId)) {
+    return next(createError(400, MESSAGES.ATTRIBUTE.INVALID_ID));
+  }
+  if (!value || !valueCode) {
+    return next(createError(400, MESSAGES.ATTRIBUTE_VALUE.MISSING_FIELDS));
+  }
+  const attribute = await Attribute.findOne({ _id: attributeId, deletedAt: null });
+  if (!attribute) {
+    return next(createError(404, MESSAGES.ATTRIBUTE.NOT_FOUND));
+  }
+  if (attribute.type === "enum" && !attribute.enumValues.includes(value)) {
+    return next(createError(400, MESSAGES.ATTRIBUTE_VALUE.INVALID_VALUE));
+  }
+  const existingAttributeValue = await AttributeValue.findOne({
+    attributeId,
+    $or: [{ value }, { valueCode }],
+    deletedAt: null,
+  });
+  if (existingAttributeValue) {
+    return next(createError(400, MESSAGES.ATTRIBUTE_VALUE.CREATE_ERROR_EXISTS));
+  }
+  const data = await AttributeValue.create({ ...req.body, attributeId });
+  return res.json(createResponse(true, 201, MESSAGES.ATTRIBUTE_VALUE.CREATE_SUCCESS, data));
+});
+
+export const getAttributeValueById = handleAsync(async (req, res, next) => {
+  const { id } = req.params;
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return next(createError(400, MESSAGES.ATTRIBUTE_VALUE.INVALID_ID));
+  }
+  const attributeValue = await AttributeValue.findOne({ _id: id, deletedAt: null }).select(
+    "attributeId value valueCode isActive"
+  );
+  if (!attributeValue) {
+    return next(createError(404, MESSAGES.ATTRIBUTE_VALUE.NOT_FOUND));
+  }
+  return res.json(createResponse(true, 200, MESSAGES.ATTRIBUTE_VALUE.GET_SUCCESS, attributeValue));
+});
+
+export const updateAttributeValue = handleAsync(async (req, res, next) => {
+  const { id } = req.params;
+  const { value, valueCode } = req.body;
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return next(createError(400, MESSAGES.ATTRIBUTE_VALUE.INVALID_ID));
+  }
+  if (value || valueCode) {
     const existingAttributeValue = await AttributeValue.findOne({
-        attributeId,
-        value: req.body.value
+      attributeId: (await AttributeValue.findById(id))?.attributeId,
+      $or: [{ value }, { valueCode }],
+      _id: { $ne: id },
+      deletedAt: null,
     });
     if (existingAttributeValue) {
-        return next(createError(400, MESSAGES.ATTRIBUTE_VALUE.CREATE_ERROR_EXISTS));
+      return next(createError(400, MESSAGES.ATTRIBUTE_VALUE.CREATE_ERROR_EXISTS));
     }
-    const data = await AttributeValue.create({ ...req.body, attributeId });
-    return res.json(createResponse(true, 201, MESSAGES.ATTRIBUTE_VALUE.CREATE_SUCCESS, data));
-});
-export const getAttributeValueById = handleAsync(async (req, res, next) => {
-    const { id } = req.params;
-    const attributeValue = await AttributeValue.findById(id);
-    if (!attributeValue) {
-        return next(createError(404, MESSAGES.ATTRIBUTE_VALUE.NOT_FOUND));
+  }
+  if (value) {
+    const attribute = await Attribute.findById((await AttributeValue.findById(id))?.attributeId);
+    if (attribute?.type === "enum" && !attribute.enumValues.includes(value)) {
+      return next(createError(400, MESSAGES.ATTRIBUTE_VALUE.INVALID_VALUE));
     }
-    return res.json(createResponse(true, 200, MESSAGES.ATTRIBUTE_VALUE.GET_SUCCESS, attributeValue));
+  }
+  const attributeValue = await AttributeValue.findOneAndUpdate(
+    { _id: id, deletedAt: null },
+    req.body,
+    { new: true }
+  ).select("attributeId value valueCode isActive");
+  if (!attributeValue) {
+    return next(createError(404, MESSAGES.ATTRIBUTE_VALUE.NOT_FOUND));
+  }
+  return res.json(createResponse(true, 200, MESSAGES.ATTRIBUTE_VALUE.UPDATE_SUCCESS, attributeValue));
 });
-export const updateAttributeValue = handleAsync(async (req, res, next) => {
-    const { id } = req.params;
-    const attributeValue = await AttributeValue.findByIdAndUpdate(id, req.body, { new: true });
-    if (!attributeValue) {
-        return next(createError(404, MESSAGES.ATTRIBUTE_VALUE.UPDATE_ERROR));
-    }
-    return res.json(createResponse(true, 200, MESSAGES.ATTRIBUTE_VALUE.UPDATE_SUCCESS, attributeValue));
-});
+
 export const deleteAttributeValue = handleAsync(async (req, res, next) => {
-    const { id } = req.params;
-    const attributeValue = await AttributeValue.findByIdAndDelete(id);
-    if (!attributeValue) {
-        return next(createError(404, MESSAGES.ATTRIBUTE_VALUE.DELETE_ERROR));
-    }
-    return res.json(createResponse(true, 200, MESSAGES.ATTRIBUTE_VALUE.DELETE_SUCCESS));
+  const { id } = req.params;
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return next(createError(400, MESSAGES.ATTRIBUTE_VALUE.INVALID_ID));
+  }
+  const attributeValue = await AttributeValue.findOne({ _id: id, deletedAt: null });
+  if (!attributeValue) {
+    return next(createError(404, MESSAGES.ATTRIBUTE_VALUE.NOT_FOUND));
+  }
+  await AttributeValue.findByIdAndDelete(id);
+  return res.json(createResponse(true, 200, MESSAGES.ATTRIBUTE_VALUE.DELETE_SUCCESS));
 });
+
 export const softDeleteAttributeValue = handleAsync(async (req, res, next) => {
-    const { id } = req.params;
-    const attributeValue = await AttributeValue.findOneAndUpdate(
-        { _id: id, deletedAt: null },
-        { deletedAt: new Date() },
-        { new: true }
-    );
-    if (!attributeValue) {
-        return next(createError(404, MESSAGES.ATTRIBUTE_VALUE.NOT_FOUND));
-    }
-    return res.json(createResponse(true, 200, MESSAGES.ATTRIBUTE_VALUE.SOFT_DELETE_SUCCESS, attributeValue));
+  const { id } = req.params;
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return next(createError(400, MESSAGES.ATTRIBUTE_VALUE.INVALID_ID));
+  }
+  const attributeValue = await AttributeValue.findOneAndUpdate(
+    { _id: id, deletedAt: null },
+    { deletedAt: new Date(), isActive: false },
+    { new: true }
+  ).select("attributeId value valueCode isActive deletedAt");
+  if (!attributeValue) {
+    return next(createError(404, MESSAGES.ATTRIBUTE_VALUE.NOT_FOUND));
+  }
+  return res.json(createResponse(true, 200, MESSAGES.ATTRIBUTE_VALUE.SOFT_DELETE_SUCCESS, attributeValue));
 });
+
 export const restoreAttributeValue = handleAsync(async (req, res, next) => {
-    const { id } = req.params;
-    const attributeValue = await AttributeValue.findOneAndUpdate(
-        { _id: id, deletedAt: { $ne: null } },
-        { deletedAt: null },    
-        { new: true }
-    );
-    if (!attributeValue) {
-        return next(createError(404, MESSAGES.ATTRIBUTE_VALUE.NOT_FOUND));
-    }
-    return res.json(createResponse(true, 200, MESSAGES.ATTRIBUTE_VALUE.RESTORE_SUCCESS, attributeValue));
+  const { id } = req.params;
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return next(createError(400, MESSAGES.ATTRIBUTE_VALUE.INVALID_ID));
+  }
+  const attributeValue = await AttributeValue.findOneAndUpdate(
+    { _id: id, deletedAt: { $ne: null } },
+    { deletedAt: null, isActive: true },
+    { new: true }
+  ).select("attributeId value valueCode isActive deletedAt");
+  if (!attributeValue) {
+    return next(createError(404, MESSAGES.ATTRIBUTE_VALUE.NOT_FOUND));
+  }
+  return res.json(createResponse(true, 200, MESSAGES.ATTRIBUTE_VALUE.RESTORE_SUCCESS, attributeValue));
 });
+
 export const getAttributeValuesByAttributeCode = handleAsync(async (req, res, next) => {
-    const { attributeCode } = req.params;
-    const attribute = await ProductAttribute.findOne({ attributeCode });
-    if (!attribute) return next(createError(404, MESSAGES.ATTRIBUTE.NOT_FOUND));
-    const attributeValues = await AttributeValue.find({ attributeId: attribute._id });
-    if (!attributeValues || attributeValues.length === 0) {
-        return next(createError(404, MESSAGES.ATTRIBUTE_VALUE.NOT_FOUND));
-    }
-    return res.json(createResponse(true, 200, MESSAGES.ATTRIBUTE_VALUE.GET_SUCCESS, attributeValues));
+  const { attributeCode } = req.params;
+  const attribute = await Attribute.findOne({ attributeCode, deletedAt: null });
+  if (!attribute) {
+    return next(createError(404, MESSAGES.ATTRIBUTE.NOT_FOUND));
+  }
+  const attributeValues = await AttributeValue.find({ attributeId: attribute._id, deletedAt: null }).select(
+    "attributeId value valueCode isActive"
+  );
+  if (!attributeValues || attributeValues.length === 0) {
+    return next(createError(404, MESSAGES.ATTRIBUTE_VALUE.NOT_FOUND));
+  }
+  return res.json(createResponse(true, 200, MESSAGES.ATTRIBUTE_VALUE.GET_SUCCESS, attributeValues));
 });

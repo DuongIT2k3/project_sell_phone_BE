@@ -2,6 +2,7 @@ import { Router } from "express";
 import { createAttributeValue, deleteAttributeValue, getAttributeValueById, getAttributeValuesByAttributeCode, getAttributeValuesByAttributeId, restoreAttributeValue, softDeleteAttributeValue, updateAttributeValue } from "./attribute-value.controller";
 import validBodyRequest from "../../common/middlewares/validBodyRequest";
 import AttributeValueSchema from "./attribute-value.schema";
+import  restrict  from "../../common/middlewares/restrict";
 
 const attributeValueRoutes = Router();
 
@@ -10,13 +11,13 @@ attributeValueRoutes.get("/code/:attributeCode", getAttributeValuesByAttributeCo
 attributeValueRoutes.get("/:id", getAttributeValueById);
 
 
-attributeValueRoutes.delete("/delete/:id", deleteAttributeValue);
-attributeValueRoutes.patch("/soft-delete/:id", softDeleteAttributeValue);
-attributeValueRoutes.patch("/restore/:id", restoreAttributeValue);
+attributeValueRoutes.delete("/delete/:id",restrict(["superAdmin", "admin"]), deleteAttributeValue);
+attributeValueRoutes.patch("/soft-delete/:id",restrict(["superAdmin", "admin"]), softDeleteAttributeValue);
+attributeValueRoutes.patch("/restore/:id",restrict(["superAdmin", "admin"]), restoreAttributeValue);
 
 attributeValueRoutes.use(validBodyRequest(AttributeValueSchema));
-attributeValueRoutes.post("/:attributeId", createAttributeValue);
-attributeValueRoutes.patch("/:id", updateAttributeValue);
+attributeValueRoutes.post("/:attributeId",restrict(["superAdmin", "admin"]), createAttributeValue);
+attributeValueRoutes.patch("/:id",restrict(["superAdmin", "admin"]), updateAttributeValue);
 
 
 export default attributeValueRoutes;

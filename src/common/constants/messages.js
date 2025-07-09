@@ -1,3 +1,5 @@
+import { INVALID } from "zod";
+
 const MESSAGES = {
 	GENERAL: {
 		SUCCESS: "Thành công",
@@ -160,6 +162,8 @@ const MESSAGES = {
 		CREATE_ERROR_EXISTS: "Giá trị thuộc tính tồn tại",
 		NOT_FOUND: "Không tìm thấy giá trị thuộc tính",
 		MISSING_FIELDS: "Thiếu các trường bắt buộc",
+		INVALID_VALUE: "Giá trị không hợp lệ cho thuộc tính",
+		INVALID_ID: "ID giá trị thuộc tính không hợp lệ",
 	},
 
 	CART: {
