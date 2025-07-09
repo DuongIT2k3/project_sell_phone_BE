@@ -22,6 +22,18 @@ const categorySchema = new Schema(
         logoUrl: {
             type: String,
             default: null
+        },
+        isActive: {
+            type: Boolean,
+            default: true
+        },
+        seoTitle: {
+            type: String,
+            default: ""
+        },
+        seoDescription: {
+            type: String,
+            default: ""
         }
     },
     {

@@ -114,6 +114,8 @@ const MESSAGES = {
 		CREATE_ERROR_EXISTS: "Danh mục đã tồn tại",
 		NOT_FOUND: "Không tìm thấy danh mục",
 		HAS_SUBCATEGORIES: "Danh mục này có danh mục con, không thể xóa",
+		INVALID_ID: "ID danh mục không hợp lệ",
+		IN_USE: "Danh mục này đang được sử dụng bởi các sản phẩm hoặc danh mục con, không thể xóa",
 	},
 
 	SUBCATEGORY: {
