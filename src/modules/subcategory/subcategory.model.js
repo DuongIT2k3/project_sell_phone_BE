@@ -23,6 +23,22 @@ const subCategorySchema = new Schema(
             type: Schema.Types.ObjectId,
             ref: "Category",
             required: true,
+        },
+        logoUrl: {
+            type: String,
+            default: null
+        },
+        isActive: {
+            type: Boolean,
+            default: true
+        },
+        seoTitle: {
+            type: String,
+            default: null
+        },
+        seoDescription: {
+            type: String,
+            default: null
         }
     },
     {

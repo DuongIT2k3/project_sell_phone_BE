@@ -136,6 +136,9 @@ const MESSAGES = {
 		NOT_FOUND: "Không tìm thấy danh mục con",
 		HAS_PRODUCTS: "Danh mục này có sản phẩm, không thể xóa",
 		CREATE_ERROR_PARENT_ID: "Danh mục cha là bắt buộc",
+		INVALID_PARENT_ID: "ID danh mục cha không hợp lệ",
+		INVALID_ID: "ID danh mục con không hợp lệ",
+		IN_USE: "Danh mục con này đang được sử dụng bởi các sản phẩm hoặc các banner",
 	},
 
 	ATTRIBUTE: {
