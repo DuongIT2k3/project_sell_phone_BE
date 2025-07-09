@@ -29,6 +29,17 @@ const MESSAGES = {
 		INVALID_EMAIL: "Email không hợp lệ",
 		INVALID_PASSWORD: "Mật khẩu không hợp lệ",
 		AUTH_ACCOUNT_INACTIVE: "Tài khoản của bạn chưa được kích hoạt hoặc đã bị vô hiệu hóa",
+		EMAIL_SEND_FAILED: "Gửi email thất bại, vui lòng thử lại sau",
+		NOT_AUTHENTICATED: "Bạn chưa đăng nhập hoặc token không hợp lệ",
+		MISSING_REFRESH_TOKEN: "Thiếu token làm mới",
+		INVALID_REFRESH_TOKEN: "Token làm mới không hợp lệ hoặc đã hết hạn",
+		REFRESH_TOKEN_SUCCESS: "Làm mới token thành công",
+		EMAIL_ALREADY_VERIFIED: "Email đã được xác minh trước đó",
+		EMAIL_VERIFIED_SUCCESS: "Email đã được xác minh thành công",
+		INVALID_EMAIL_TOKEN: "Token xác minh email không hợp lệ hoặc đã hết hạn",
+		FORGOT_PASSWORD_SUCCESS: "Yêu cầu đặt lại mật khẩu thành công, vui lòng kiểm tra email của bạn",
+		INVALID_RESET_TOKEN: "Token đặt lại mật khẩu không hợp lệ hoặc đã hết hạn",
+		RESET_PASSWORD_SUCCESS: "Đặt lại mật khẩu thành công, vui lòng đăng nhập lại",
 	},
 	USER: {
 		GET_SUCCESS: "Lấy danh sách người dùng thành công",
@@ -177,6 +188,7 @@ const MESSAGES = {
 		UPDATE_ITEM_ERROR: "Lỗi khi cập nhật sản phẩm trong giỏ hàng",
 		REMOVE_ITEM_ERROR: "Lỗi khi xóa sản phẩm khỏi giỏ hàng",
 		CLEAR_CART_ERROR: "Lỗi khi xóa toàn bộ giỏ hàng",
+		CREATE_FAILED: "Lỗi khi tạo giỏ hàng",
 	},
 
 	ORDER: {
