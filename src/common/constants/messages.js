@@ -1,4 +1,3 @@
-import { INVALID } from "zod";
 
 const MESSAGES = {
 	GENERAL: {
@@ -72,6 +71,7 @@ const MESSAGES = {
 		SOFT_DELETE_ERROR: "Xóa mềm sản phẩm thất bại",
 		PRODUCT_IN_USE: "Sản phẩm này đang được sử dụng trong đơn hàng hoặc giỏ hàng, không thể xóa",
 		INVALID_ID: "ID sản phẩm không hợp lệ",
+		INVALID_IDS: "ID danh mục con hoặc thương hiệu không hợp lệ",
 	},
 	PRODUCT_VARIANT: {
 		GET_SUCCESS: "Lấy danh sách biến thể sản phẩm thành công",	

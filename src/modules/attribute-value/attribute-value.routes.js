@@ -1,8 +1,8 @@
 import { Router } from "express";
-import { createAttributeValue, deleteAttributeValue, getAttributeValueById, getAttributeValuesByAttributeCode, getAttributeValuesByAttributeId, restoreAttributeValue, softDeleteAttributeValue, updateAttributeValue } from "./attribute-value.controller";
-import validBodyRequest from "../../common/middlewares/validBodyRequest";
-import AttributeValueSchema from "./attribute-value.schema";
-import  restrict  from "../../common/middlewares/restrict";
+import { createAttributeValue, deleteAttributeValue, getAttributeValueById, getAttributeValuesByAttributeCode, getAttributeValuesByAttributeId, restoreAttributeValue, softDeleteAttributeValue, updateAttributeValue } from "./attribute-value.controller.js";
+import validBodyRequest from "../../common/middlewares/validBodyRequest.js";
+import AttributeValueSchema from "./attribute-value.schema.js";
+import  restrict  from "../../common/middlewares/restrict.js";
 
 const attributeValueRoutes = Router();
 

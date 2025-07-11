@@ -1,5 +1,5 @@
-import MESSAGES from "../constants/messages";
-import createError from "../utils/error";
+import MESSAGES from "../constants/messages.js";
+import createError from "../utils/error.js";
 
 const restrict = (roles) => {
     return (req, res, next) => {

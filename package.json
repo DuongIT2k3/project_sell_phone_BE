@@ -20,6 +20,7 @@
     "nodemon": "^3.1.10"
   },
   "dependencies": {
+    "@payos/node": "^1.0.10",
     "bcryptjs": "^3.0.2",
     "concurrently": "^9.1.2",
     "cors": "^2.8.5",

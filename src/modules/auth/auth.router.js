@@ -9,7 +9,7 @@ const authRouter = Router();
 authRouter.post("/register", validBodyRequest(registerSchema), authRegister);
 authRouter.post("/login", validBodyRequest(loginSchema), authLogin);
 authRouter.post("/logout", restrict(["member", "admin", "superAdmin"]), authLogout);
-authRouter.post("/refresh-token", validBodyRequest({refreshToken: z.string().min(1)}), authRefreshToken);
+authRouter.post("/refresh-token", authRefreshToken);
 authRouter.get("/verify-email/:token", authVerifyEmail);
 authRouter.post("/forgot-password", validBodyRequest(forgotPasswordSchema), authForgotPassword);
 authRouter.post("/reset-password/:token",validBodyRequest(resetPasswordSchema), authResetPassword);
