@@ -156,6 +156,8 @@ const MESSAGES = {
 		RESTORE_FAILED: "Khôi phục thương hiệu thất bại",
 		CREATE_ERROR_EXISTS: "Thương hiệu đã tồn tại",
 		NOT_FOUND: "Không tìm thấy thương hiệu",
+		MISSING_FIELDS: "Thiếu các trường bắt buộc",
+		IN_USE: "Thương hiệu này đang được sử dụng bởi các sản phẩm, không thể xóa",
 		INVALID_ID: "ID thương hiệu không hợp lệ",
 	},
 
