@@ -33,13 +33,17 @@ export const createAttributeValue = handleAsync(async (req, res, next) => {
   if (!value || !valueCode) {
     return next(createError(400, MESSAGES.ATTRIBUTE_VALUE.MISSING_FIELDS));
   }
+  
   const attribute = await Attribute.findOne({ _id: attributeId, deletedAt: null });
   if (!attribute) {
     return next(createError(404, MESSAGES.ATTRIBUTE.NOT_FOUND));
   }
+  
+  // Validate enum value before checking duplicates
   if (attribute.type === "enum" && !attribute.enumValues.includes(value)) {
     return next(createError(400, MESSAGES.ATTRIBUTE_VALUE.INVALID_VALUE));
   }
+  
   const existingAttributeValue = await AttributeValue.findOne({
     attributeId,
     $or: [{ value }, { valueCode }],
@@ -48,6 +52,7 @@ export const createAttributeValue = handleAsync(async (req, res, next) => {
   if (existingAttributeValue) {
     return next(createError(400, MESSAGES.ATTRIBUTE_VALUE.CREATE_ERROR_EXISTS));
   }
+  
   const data = await AttributeValue.create({ ...req.body, attributeId });
   return res.json(createResponse(true, 201, MESSAGES.ATTRIBUTE_VALUE.CREATE_SUCCESS, data));
 });
@@ -72,10 +77,30 @@ export const updateAttributeValue = handleAsync(async (req, res, next) => {
   if (!mongoose.Types.ObjectId.isValid(id)) {
     return next(createError(400, MESSAGES.ATTRIBUTE_VALUE.INVALID_ID));
   }
+  
+  // First, get the current AttributeValue to get attributeId
+  const currentAttributeValue = await AttributeValue.findOne({ _id: id, deletedAt: null });
+  if (!currentAttributeValue) {
+    return next(createError(404, MESSAGES.ATTRIBUTE_VALUE.NOT_FOUND));
+  }
+  
+  // Validate enum value if value is being updated
+  if (value) {
+    const attribute = await Attribute.findById(currentAttributeValue.attributeId);
+    if (attribute?.type === "enum" && !attribute.enumValues.includes(value)) {
+      return next(createError(400, MESSAGES.ATTRIBUTE_VALUE.INVALID_VALUE));
+    }
+  }
+  
+  // Check for duplicates if value or valueCode is being updated
   if (value || valueCode) {
+    const duplicateConditions = [];
+    if (value) duplicateConditions.push({ value });
+    if (valueCode) duplicateConditions.push({ valueCode });
+    
     const existingAttributeValue = await AttributeValue.findOne({
-      attributeId: (await AttributeValue.findById(id))?.attributeId,
-      $or: [{ value }, { valueCode }],
+      attributeId: currentAttributeValue.attributeId,
+      $or: duplicateConditions,
       _id: { $ne: id },
       deletedAt: null,
     });
@@ -83,20 +108,13 @@ export const updateAttributeValue = handleAsync(async (req, res, next) => {
       return next(createError(400, MESSAGES.ATTRIBUTE_VALUE.CREATE_ERROR_EXISTS));
     }
   }
-  if (value) {
-    const attribute = await Attribute.findById((await AttributeValue.findById(id))?.attributeId);
-    if (attribute?.type === "enum" && !attribute.enumValues.includes(value)) {
-      return next(createError(400, MESSAGES.ATTRIBUTE_VALUE.INVALID_VALUE));
-    }
-  }
+  
   const attributeValue = await AttributeValue.findOneAndUpdate(
     { _id: id, deletedAt: null },
     req.body,
     { new: true }
   ).select("attributeId value valueCode isActive");
-  if (!attributeValue) {
-    return next(createError(404, MESSAGES.ATTRIBUTE_VALUE.NOT_FOUND));
-  }
+  
   return res.json(createResponse(true, 200, MESSAGES.ATTRIBUTE_VALUE.UPDATE_SUCCESS, attributeValue));
 });
 
@@ -138,7 +156,7 @@ export const restoreAttributeValue = handleAsync(async (req, res, next) => {
     { _id: id, deletedAt: { $ne: null } },
     { deletedAt: null, isActive: true },
     { new: true }
-  ).select("attributeId value valueCode isActive deletedAt");
+  ).select("attributeId value valueCode isActive");
   if (!attributeValue) {
     return next(createError(404, MESSAGES.ATTRIBUTE_VALUE.NOT_FOUND));
   }
@@ -147,10 +165,15 @@ export const restoreAttributeValue = handleAsync(async (req, res, next) => {
 
 export const getAttributeValuesByAttributeCode = handleAsync(async (req, res, next) => {
   const { attributeCode } = req.params;
+  if (!attributeCode || attributeCode.trim() === "") {
+    return next(createError(400, MESSAGES.ATTRIBUTE.MISSING_FIELDS));
+  }
+  
   const attribute = await Attribute.findOne({ attributeCode, deletedAt: null });
   if (!attribute) {
     return next(createError(404, MESSAGES.ATTRIBUTE.NOT_FOUND));
   }
+  
   const attributeValues = await AttributeValue.find({ attributeId: attribute._id, deletedAt: null }).select(
     "attributeId value valueCode isActive"
   );
