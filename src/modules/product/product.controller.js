@@ -61,28 +61,7 @@ export const getListProduct = handleAsync(async (req, res, next) => {
     { $match: query },
     {
       $lookup: {
-        from: "productvariants",
-        localField: "_id",
-        foreignField: "productId",
-        as: "variants",
-      },
-    },
-    {
-      $match: color || capacity
-        ? {
-            "variants": {
-              $elemMatch: {
-                ...(color && mongoose.Types.ObjectId.isValid(color) ? { color } : {}),
-                ...(capacity && mongoose.Types.ObjectId.isValid(capacity) ? { capacity } : {}),
-                deletedAt: null,
-              },
-            },
-          }
-        : {},
-    },
-    {
-      $lookup: {
-        from: "categories",
+        from: "subcategories",
         localField: "subCategory",
         foreignField: "_id",
         as: "subCategory",
@@ -99,6 +78,24 @@ export const getListProduct = handleAsync(async (req, res, next) => {
     },
     { $unwind: { path: "$brand", preserveNullAndEmptyArrays: true } },
     {
+      $lookup: {
+        from: "productvariants",
+        localField: "_id",
+        foreignField: "productId",
+        pipeline: [
+          { $match: { deletedAt: null } },
+          ...(color || capacity ? [{
+            $match: {
+              ...(color && mongoose.Types.ObjectId.isValid(color) ? { color } : {}),
+              ...(capacity && mongoose.Types.ObjectId.isValid(capacity) ? { capacity } : {}),
+            }
+          }] : [])
+        ],
+        as: "variants",
+      },
+    },
+    ...(color || capacity ? [{ $match: { "variants.0": { $exists: true } } }] : []),
+    {
       $project: {
         title: 1,
         priceDefault: 1,
@@ -109,7 +106,10 @@ export const getListProduct = handleAsync(async (req, res, next) => {
         seoTitle: 1,
         seoDescription: 1,
         isActive: 1,
-        variants: 1,
+        thumbnail: 1,
+        averageRating: 1,
+        soldCount: 1,
+        variantCount: { $size: "$variants" },
       },
     },
     { $sort: { [sortBy]: sortOrder === "asc" ? 1 : -1 } },
@@ -247,7 +247,7 @@ export const restoreProduct = handleAsync(async (req, res, next) => {
   }
   const data = await Product.findOneAndUpdate(
     { _id: id, deletedAt: { $ne: null } },
-    { deletedAt: null, isActive: true },
+    { deletedAt: null, isActive: true, updatedAt: new Date() },
     { new: true }
   ).select("title priceDefault subCategory brand description slug seoTitle seoDescription isActive");
   if (!data) {

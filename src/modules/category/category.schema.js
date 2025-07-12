@@ -8,6 +8,10 @@ const categorySchema = z.object({
   seoTitle: z.string().optional(),
   seoDescription: z.string().optional(),
   isActive: z.boolean().default(true).optional(),
-})
+});
+
+
+const categoryUpdateSchema = categorySchema.partial();
 
 export default categorySchema;
+export { categoryUpdateSchema };
