@@ -8,8 +8,8 @@ import {
     restoreBanner,
     toggleBannerStatus
 } from "./banner.controller.js";
-import { validBodyRequest } from "../../common/middlewares/validBodyRequest.js";
-import { restrict } from "../../common/middlewares/restrict.js";
+import  validBodyRequest  from "../../common/middlewares/validBodyRequest.js";
+import  restrict  from "../../common/middlewares/restrict.js";
 import { createBannerSchema, updateBannerSchema } from "./banner.schema.js";
 
 const bannerRouter = Router();
