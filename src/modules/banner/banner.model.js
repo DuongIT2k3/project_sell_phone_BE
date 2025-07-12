@@ -34,6 +34,10 @@ const bannerSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    deletedAt: {
+        type: Date,
+        default: null,
+    },
 },{
     versionKey: false,
     timestamps: true

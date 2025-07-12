@@ -202,6 +202,30 @@ const MESSAGES = {
 		INVALID_ID: "ID giá trị thuộc tính không hợp lệ",
 	},
 
+	BANNER: {
+		GET_SUCCESS: "Lấy danh sách banner thành công",
+		GET_BY_ID_SUCCESS: "Lấy thông tin banner thành công",
+		CREATE_SUCCESS: "Tạo banner thành công",
+		UPDATE_SUCCESS: "Cập nhật banner thành công",
+		DELETE_SUCCESS: "Xóa banner thành công",
+		RESTORE_SUCCESS: "Khôi phục banner thành công",
+		ACTIVATE_SUCCESS: "Kích hoạt banner thành công",
+		DEACTIVATE_SUCCESS: "Vô hiệu hóa banner thành công",
+
+		CREATE_ERROR: "Lỗi khi tạo banner",
+		UPDATE_ERROR: "Lỗi khi cập nhật banner",
+		DELETE_ERROR: "Lỗi khi xóa banner",
+		RESTORE_FAILED: "Khôi phục banner thất bại",
+		NOT_FOUND: "Không tìm thấy banner",
+		INVALID_ID: "ID banner không hợp lệ",
+		INVALID_PRODUCT_ID: "ID sản phẩm không hợp lệ",
+		INVALID_CATEGORY_ID: "ID danh mục không hợp lệ",
+		PRODUCT_NOT_FOUND: "Sản phẩm không tồn tại",
+		CATEGORY_NOT_FOUND: "Danh mục không tồn tại",
+		SLUG_EXISTS: "Slug đã tồn tại",
+		MISSING_FIELDS: "Thiếu các trường bắt buộc",
+	},
+
 	CART: {
 		GET_SUCCESS: "Lấy giỏ hàng thành công",
 		ADD_ITEM_SUCCESS: "Thêm sản phẩm vào giỏ hàng thành công",
