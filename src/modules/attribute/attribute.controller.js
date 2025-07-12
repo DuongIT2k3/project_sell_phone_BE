@@ -7,7 +7,7 @@ import AttributeValue from "../attribute-value/attribute-value.model.js";
 import Attribute from "./attribute.model.js";
 
 export const getAllAttributes = handleAsync(async (req, res, next) => {
-  const attributes = await Attribute.find({ deletedAt: null }).select("name attributeCode description type enumValues isActive");
+  const attributes = await Attribute.find({ deletedAt: null }).select("attributeName attributeCode description type enumValues isActive");
   if (!attributes || attributes.length === 0) {
     return next(createError(404, MESSAGES.ATTRIBUTE.NOT_FOUND));
   }
@@ -17,8 +17,8 @@ export const getAllAttributes = handleAsync(async (req, res, next) => {
 });
 
 export const createAttribute = handleAsync(async (req, res, next) => {
-  const { name, attributeCode, type, enumValues } = req.body;
-  if (!name || !attributeCode || !type) {
+  const { attributeName, attributeCode, type, enumValues } = req.body;
+  if (!attributeName || !attributeCode || !type) {
     return next(createError(400, MESSAGES.ATTRIBUTE.MISSING_FIELDS));
   }
   if (type === "enum" && (!enumValues || !Array.isArray(enumValues) || enumValues.length === 0)) {
@@ -40,7 +40,7 @@ export const getAttributeById = handleAsync(async (req, res, next) => {
     return next(createError(400, MESSAGES.ATTRIBUTE.INVALID_ID));
   }
   const attribute = await Attribute.findOne({ _id: id, deletedAt: null }).select(
-    "name attributeCode description type enumValues isActive"
+    "attributeName attributeCode description type enumValues isActive"
   );
   if (!attribute) {
     return next(createError(404, MESSAGES.ATTRIBUTE.NOT_FOUND));
@@ -73,7 +73,7 @@ export const updateAttribute = handleAsync(async (req, res, next) => {
     { _id: id, deletedAt: null },
     req.body,
     { new: true }
-  ).select("name attributeCode description type enumValues isActive");
+  ).select("attributeName attributeCode description type enumValues isActive");
   if (!attribute) {
     return next(createError(404, MESSAGES.ATTRIBUTE.NOT_FOUND));
   }
@@ -116,7 +116,7 @@ export const softDeleteAttribute = handleAsync(async (req, res, next) => {
     { _id: id, deletedAt: null },
     { deletedAt: new Date(), isActive: false },
     { new: true }
-  ).select("name attributeCode description type enumValues isActive deletedAt");
+  ).select("attributeName attributeCode description type enumValues isActive deletedAt");
   if (!updatedAttribute) {
     return next(createError(404, MESSAGES.ATTRIBUTE.NOT_FOUND));
   }
@@ -134,7 +134,7 @@ export const restoreAttribute = handleAsync(async (req, res, next) => {
     { _id: id, deletedAt: { $ne: null } },
     { deletedAt: null, isActive: true },
     { new: true }
-  ).select("name attributeCode description type enumValues isActive");
+  ).select("attributeName attributeCode description type enumValues isActive");
   if (!attribute) {
     return next(createError(404, MESSAGES.ATTRIBUTE.NOT_FOUND));
   }

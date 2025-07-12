@@ -140,6 +140,24 @@ const MESSAGES = {
 		INVALID_ID: "ID danh mục con không hợp lệ",
 		IN_USE: "Danh mục con này đang được sử dụng bởi các sản phẩm hoặc các banner",
 	},
+	BRAND: {
+		GET_SUCCESS: "Lấy danh sách thương hiệu thành công",
+		GET_BY_ID_SUCCESS: "Lấy thông tin thương hiệu thành công",
+		CREATE_SUCCESS: "Tạo thương hiệu thành công",
+		UPDATE_SUCCESS: "Cập nhật thương hiệu thành công",
+		DELETE_SUCCESS: "Xóa thương hiệu thành công",
+		SOFT_DELETE_SUCCESS: "Xóa mềm thương hiệu thành công",
+		RESTORE_SUCCESS: "Khôi phục thương hiệu thành công",
+
+		CREATE_ERROR: "Lỗi khi tạo thương hiệu",
+		UPDATE_ERROR: "Lỗi khi cập nhật thương hiệu",
+		DELETE_ERROR: "Lỗi khi xóa thương hiệu",
+		SOFT_DELETE_FAILED: "Xóa mềm thương hiệu thất bại",
+		RESTORE_FAILED: "Khôi phục thương hiệu thất bại",
+		CREATE_ERROR_EXISTS: "Thương hiệu đã tồn tại",
+		NOT_FOUND: "Không tìm thấy thương hiệu",
+		INVALID_ID: "ID thương hiệu không hợp lệ",
+	},
 
 	ATTRIBUTE: {
 		GET_SUCCESS: "Lấy danh sách thuộc tính thành công",

@@ -3,7 +3,7 @@ import Product from "./product.model.js";
 import ProductVariant from "../product-variant/product-variant.model.js";
 import OrderProduct from "../order/order-product.model.js";
 import CartProduct from "../cart/cart-product.model.js";
-import Category from "../category/category.model.js";
+import SubCategory from "../subcategory/subcategory.model.js";
 import Brand from "../brand/brand.model.js";
 import handleAsync from "../../common/utils/handleAsync.js";
 import createResponse from "../../common/utils/response.js";
@@ -20,14 +20,14 @@ export const createProduct = handleAsync(async (req, res, next) => {
   }
   const [existingProduct, subCategoryExists, brandExists] = await Promise.all([
     Product.findOne({ $or: [{ title }, { slug }], deletedAt: null }),
-    Category.findOne({ _id: subCategory, deletedAt: null }),
+    SubCategory.findOne({ _id: subCategory, deletedAt: null }),
     Brand.findOne({ _id: brand, deletedAt: null }),
   ]);
   if (existingProduct) {
     return next(createError(400, MESSAGES.PRODUCT.CREATE_ERROR_EXISTS));
   }
   if (!subCategoryExists) {
-    return next(createError(404, MESSAGES.CATEGORY.NOT_FOUND));
+    return next(createError(404, MESSAGES.SUBCATEGORY.NOT_FOUND));
   }
   if (!brandExists) {
     return next(createError(404, MESSAGES.BRAND.NOT_FOUND));
@@ -169,9 +169,9 @@ export const updateProduct = handleAsync(async (req, res, next) => {
     }
   }
   if (subCategory) {
-    const subCategoryExists = await Category.findOne({ _id: subCategory, deletedAt: null });
+    const subCategoryExists = await SubCategory.findOne({ _id: subCategory, deletedAt: null });
     if (!subCategoryExists) {
-      return next(createError(404, MESSAGES.CATEGORY.NOT_FOUND));
+      return next(createError(404, MESSAGES.SUBCATEGORY.NOT_FOUND));
     }
   }
   if (brand) {
