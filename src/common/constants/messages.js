@@ -214,6 +214,23 @@ const MESSAGES = {
 		REMOVE_ITEM_ERROR: "Lỗi khi xóa sản phẩm khỏi giỏ hàng",
 		CLEAR_CART_ERROR: "Lỗi khi xóa toàn bộ giỏ hàng",
 		CREATE_FAILED: "Lỗi khi tạo giỏ hàng",
+		
+		NOT_FOUND: "Giỏ hàng không tồn tại",
+		PRODUCT_NOT_FOUND: "Sản phẩm không tồn tại",
+		VARIANT_NOT_FOUND: "Biến thể sản phẩm không tồn tại",
+		PRODUCT_NOT_IN_CART: "Sản phẩm không có trong giỏ hàng",
+		INVALID_QUANTITY: "Số lượng không hợp lệ",
+		INSUFFICIENT_STOCK: "Không đủ hàng trong kho",
+		QUANTITY_EXCEEDS_STOCK: "Số lượng vượt quá hàng tồn kho",
+		INVALID_PRODUCT_ID: "ID sản phẩm không hợp lệ",
+		INVALID_VARIANT_ID: "ID biến thể sản phẩm không hợp lệ",
+		INVALID_CART_PRODUCT_ID: "ID sản phẩm trong giỏ hàng không hợp lệ",
+		MISSING_REQUIRED_FIELDS: "Thiếu các trường bắt buộc",
+		QUANTITY_MUST_BE_POSITIVE: "Số lượng phải lớn hơn 0",
+		QUANTITY_LIMIT_EXCEEDED: "Số lượng không được vượt quá giới hạn cho phép",
+		PRODUCT_ALREADY_IN_CART: "Sản phẩm đã có trong giỏ hàng",
+		CART_IS_EMPTY: "Giỏ hàng trống",
+		CART_TOTAL_UPDATED: "Tổng giá trị giỏ hàng đã được cập nhật",
 	},
 
 	ORDER: {
