@@ -1,10 +1,6 @@
 import { z } from "zod";
 
-const SubCategorySchema = z.object({
-  parentCategoryId: z
-    .string()
-    .regex(/^[0-9a-fA-F]{24}$/, "Invalid Parent Category ID")
-    .min(1, "Parent category ID is required"),
+const BrandSchema = z.object({
   title: z.string().min(1, "Title is required"),
   logoUrl: z.string().optional(),
   description: z.string().optional(),
@@ -15,7 +11,7 @@ const SubCategorySchema = z.object({
 });
 
 
-const SubCategoryUpdateSchema = SubCategorySchema.partial();
+const BrandUpdateSchema = BrandSchema.partial();
 
-export default SubCategorySchema;
-export { SubCategoryUpdateSchema };
+export default BrandSchema;
+export { BrandUpdateSchema };

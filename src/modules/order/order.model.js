@@ -59,6 +59,20 @@ const orderSchema = new mongoose.Schema(
       default: 0,
       min: 0,
     },
+    orderCode: {
+      type: Number,
+      unique: true,
+    },
+    payOSOrderCode: {
+      type: Number,
+    },
+    paymentUrl: {
+      type: String,
+    },
+    deletedAt: {
+      type: Date,
+      default: null,
+    },
   },
   { timestamps: true, versionKey: false }
 );

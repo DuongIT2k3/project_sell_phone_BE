@@ -1,19 +1,50 @@
 import { Router } from "express";
-import { createProduct, deleteProduct, getDetailProduct, getListProduct, restoreProduct, softDeleteProduct, updateProduct } from "./product.controller.js";
+import { 
+    createProduct, 
+    deleteProduct, 
+    getDetailProduct, 
+    getListProduct, 
+    restoreProduct, 
+    softDeleteProduct, 
+    updateProduct 
+} from "./product.controller.js";
 import validBodyRequest from "../../common/middlewares/validBodyRequest.js";
-import ProductSchema from "./product.schema.js";
+import ProductSchema, { ProductUpdateSchema } from "./product.schema.js";
+import restrict from "../../common/middlewares/restrict.js";
 
-const productRoutes = Router()
+const productRoutes = Router();
 
-productRoutes.get("/", getListProduct)
-productRoutes.get("/:id", getDetailProduct)
 
-productRoutes.delete("/:id", deleteProduct)
-productRoutes.patch("/soft-delete/:id", softDeleteProduct)
-productRoutes.patch("/restore/:id", restoreProduct)
+productRoutes.get("/", getListProduct);
+productRoutes.get("/:id", getDetailProduct);
 
-productRoutes.use(validBodyRequest(ProductSchema))
-productRoutes.post("/", createProduct)
-productRoutes.patch("/:id", updateProduct)
+productRoutes.post("/", 
+    restrict(["superAdmin", "admin"]), 
+    validBodyRequest(ProductSchema), 
+    createProduct
+);
 
-export default productRoutes
+productRoutes.patch("/:id", 
+    restrict(["superAdmin", "admin"]), 
+    validBodyRequest(ProductUpdateSchema), 
+    updateProduct
+);
+
+
+productRoutes.patch("/soft-delete/:id", 
+    restrict(["superAdmin", "admin"]), 
+    softDeleteProduct
+);
+
+productRoutes.patch("/restore/:id", 
+    restrict(["superAdmin", "admin"]), 
+    restoreProduct
+);
+
+
+productRoutes.delete("/:id", 
+    restrict(["superAdmin", "admin"]), 
+    deleteProduct
+);
+
+export default productRoutes;

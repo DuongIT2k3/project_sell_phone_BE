@@ -9,7 +9,8 @@ import {
   updateProductVariant,
 } from "./product-variant.controller.js";
 import validBodyRequest from "../../common/middlewares/validBodyRequest.js";
-import ProductVariantSchema from "./product-variant.schema.js";
+import ProductVariantSchema, { ProductVariantUpdateSchema } from "./product-variant.schema.js";
+import restrict from "../../common/middlewares/restrict.js";
 
 const productVariantRoutes = Router();
 
@@ -18,14 +19,33 @@ productVariantRoutes.get("/", getListProductVariants);
 productVariantRoutes.get("/:id", getProductVariantById);
 
 
-productVariantRoutes.post("/", validBodyRequest(ProductVariantSchema), createProductVariant);
+productVariantRoutes.post("/", 
+  restrict(["superAdmin", "admin"]), 
+  validBodyRequest(ProductVariantSchema), 
+  createProductVariant
+);
+
+productVariantRoutes.patch("/:id", 
+  restrict(["superAdmin", "admin"]), 
+  validBodyRequest(ProductVariantUpdateSchema), 
+  updateProductVariant
+);
 
 
-productVariantRoutes.patch("/:id", validBodyRequest(ProductVariantSchema.partial()), updateProductVariant);
-productVariantRoutes.patch("/soft/:id", softDeleteProductVariant);
-productVariantRoutes.patch("/restore/:id", restoreProductVariant);
+productVariantRoutes.patch("/soft-delete/:id", 
+  restrict(["superAdmin", "admin"]), 
+  softDeleteProductVariant
+);
+
+productVariantRoutes.patch("/restore/:id", 
+  restrict(["superAdmin", "admin"]), 
+  restoreProductVariant
+);
 
 
-productVariantRoutes.delete("/:id", deleteProductVariant);
+productVariantRoutes.delete("/:id", 
+  restrict(["superAdmin", "admin"]), 
+  deleteProductVariant
+);
 
 export default productVariantRoutes;

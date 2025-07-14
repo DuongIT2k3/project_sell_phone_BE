@@ -1,19 +1,17 @@
+import MESSAGES from "../constants/messages.js";
+import createError from "../utils/error.js";
+
 const restrict = (roles) => {
     return (req, res, next) => {
         const user = req.user;
         if (!user) {
-            return res.status(403).json({
-                success: false,
-                message: "Access denied. User not authenticated."
-            });
+            return next(createError(401, MESSAGES.GENERAL.UNAUTHORIZED));
         }
 
         if (!roles.includes(user.role)) {
-            return res.status(403).json({
-                success: false,
-                message: "Access denied. You do not have the required permissions."
-            });
+            return next(createError(403, MESSAGES.GENERAL.FORBIDDEN));
         }
          next();
-    }
-}
+    };
+};
+export default restrict;
