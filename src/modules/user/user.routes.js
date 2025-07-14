@@ -8,8 +8,8 @@ import {
     deactivateUser,
     activateUser
 } from "./user.controller.js";
-import { validBodyRequest } from "../../common/middlewares/validBodyRequest.js";
-import { restrict } from "../../common/middlewares/restrict.js";
+import  validBodyRequest  from "../../common/middlewares/validBodyRequest.js";
+import  restrict  from "../../common/middlewares/restrict.js";
 import { verifyUser } from "../../common/middlewares/verifyUser.js";
 import { updateProfileSchema, updateUserSchema } from "./user.schema.js";
 
