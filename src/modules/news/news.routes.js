@@ -11,8 +11,8 @@ import {
     togglePublishStatus,
     getRelatedNews
 } from "./news.controller.js";
-import  validBodyRequest  from "../../common/middlewares/validBodyRequest.js";
-import  restrict  from "../../common/middlewares/restrict.js";
+import { validBodyRequest } from "../../common/middlewares/validBodyRequest.js";
+import { restrict } from "../../common/middlewares/restrict.js";
 import { verifyUser } from "../../common/middlewares/verifyUser.js";
 import { createNewsSchema, updateNewsSchema } from "./news.schema.js";
 

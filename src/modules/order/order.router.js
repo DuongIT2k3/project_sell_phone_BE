@@ -7,7 +7,7 @@ import {
   getOrderById,
   cancelOrder
 } from "./order.controller.js";
-import  validBodyRequest  from "../../common/middlewares/validBodyRequest.js";
+import { validBodyRequest } from "../../common/middlewares/validBodyRequest.js";
 import { verifyUser } from "../../common/middlewares/verifyUser.js";
 import { createOrderSchema } from "./order.schema.js";
 

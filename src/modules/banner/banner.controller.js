@@ -1,7 +1,7 @@
 import handleAsync from "../../common/utils/handleAsync.js";
 import createResponse from "../../common/utils/response.js";
 import createError from "../../common/utils/error.js";
-import  MESSAGES  from "../../common/constants/messages.js";
+import { MESSAGES } from "../../common/constants/messages.js";
 import Banner from "./banner.model.js";
 import Product from "../product/product.model.js";
 import Category from "../category/category.model.js";
