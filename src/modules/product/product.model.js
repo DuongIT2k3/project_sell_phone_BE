@@ -7,10 +7,17 @@ const productSchema = new mongoose.Schema(
       required: true,
     },
     thumbnail: {
-      type: String,
+      type: String, // URL của ảnh từ Cloudinary
+    },
+    thumbnailPublicId: {
+      type: String, // Public ID của thumbnail trên Cloudinary
     },
     images: {
-      type: [String],
+      type: [{
+        url: String, // URL của ảnh từ Cloudinary
+        publicId: String, // Public ID của ảnh trên Cloudinary
+        alt: String, // Text mô tả ảnh
+      }],
       default: [],
     },
     description: {

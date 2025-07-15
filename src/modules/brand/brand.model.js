@@ -7,7 +7,11 @@ const brandSchema = new mongoose.Schema({
         unique: true,
     },
     logoUrl: {
-        type: String,
+        type: String, // URL của logo từ Cloudinary
+        default: null,
+    },
+    logoPublicId: {
+        type: String, // Public ID của logo trên Cloudinary
         default: null,
     },
     description: {

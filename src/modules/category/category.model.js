@@ -20,7 +20,11 @@ const categorySchema = new Schema(
             default: null
         },
         logoUrl: {
-            type: String,
+            type: String, // URL của logo từ Cloudinary
+            default: null
+        },
+        logoPublicId: {
+            type: String, // Public ID của logo trên Cloudinary
             default: null
         },
         isActive: {

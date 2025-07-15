@@ -13,6 +13,7 @@ import bannerRoutes from "../modules/banner/banner.routes.js";
 import newsRoutes from "../modules/news/news.routes.js";
 import userRouter from "../modules/user/user.routes.js";
 import orderRouter from "../modules/order/order.router.js";
+import uploadRoutes from "../modules/upload/upload.routes.js";
 
 
 const router = Router()
@@ -30,6 +31,7 @@ router.use("/brands", brandRoutes);
 router.use("/banners", bannerRoutes);
 router.use("/news", newsRoutes);
 router.use("/users", userRouter);
+router.use("/upload", uploadRoutes);
 
 router.use("/order", orderRouter);
 
