@@ -42,5 +42,10 @@ const categorySchema = new Schema(
     }
 )
 
+categorySchema.index({ slug: 1 }, { unique: true });
+categorySchema.index({ isActive: 1 });
+categorySchema.index({ deletedAt: 1 });
+categorySchema.index({ createdAt: -1 });
+
 const Category = mongoose.model("Category", categorySchema);
 export default Category;

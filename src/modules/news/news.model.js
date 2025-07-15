@@ -59,9 +59,12 @@ const newsSchema = new mongoose.Schema({
 
 // Index cho tìm kiếm
 newsSchema.index({ title: 'text', content: 'text', tags: 'text' });
-newsSchema.index({ slug: 1 });
-newsSchema.index({ isPublished: 1, publishedAt: -1 });
+newsSchema.index({ slug: 1 }, { unique: true });
 newsSchema.index({ authorId: 1 });
+newsSchema.index({ isPublished: 1 });
+newsSchema.index({ deletedAt: 1 });
+newsSchema.index({ createdAt: -1 });
+newsSchema.index({ tags: 1 });
 
 // Virtual để tự động set publishedAt khi isPublished = true
 newsSchema.pre('save', function(next) {

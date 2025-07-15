@@ -95,5 +95,14 @@ const productSchema = new mongoose.Schema(
   }
 );
 
+productSchema.index({ slug: 1 }, { unique: true });
+productSchema.index({ brand: 1 });
+productSchema.index({ subCategory: 1 });
+productSchema.index({ isActive: 1 });
+productSchema.index({ deletedAt: 1 });
+productSchema.index({ createdAt: -1 });
+productSchema.index({ tags: 1 });
+productSchema.index({ title: 'text', description: 'text', tags: 'text' });
+
 const Product = mongoose.model("Product", productSchema);
 export default Product;

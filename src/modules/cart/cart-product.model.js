@@ -38,6 +38,12 @@ const cartProductSchema = new mongoose.Schema(
   }
 );
 
+cartProductSchema.index({ cartId: 1 });
+cartProductSchema.index({ productId: 1 });
+cartProductSchema.index({ variantId: 1 });
+cartProductSchema.index({ deletedAt: 1 });
+cartProductSchema.index({ createdAt: -1 });
+
 const CartProduct = mongoose.model("CartProduct", cartProductSchema);
 
 export default CartProduct;

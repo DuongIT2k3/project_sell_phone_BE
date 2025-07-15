@@ -30,6 +30,12 @@ const attributeValueSchema = new mongoose.Schema({
 }
 )
 
+attributeValueSchema.index({ valueCode: 1 }, { unique: true });
+attributeValueSchema.index({ attributeId: 1 });
+attributeValueSchema.index({ isActive: 1 });
+attributeValueSchema.index({ deletedAt: 1 });
+attributeValueSchema.index({ createdAt: -1 });
+
 const AttributeValue = mongoose.model("AttributeValue", attributeValueSchema);
 
 export default AttributeValue

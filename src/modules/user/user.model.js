@@ -67,4 +67,9 @@ const userSchema = new mongoose.Schema({
     timestamps: true,
 }
 )
+userSchema.index({ email: 1 }, { unique: true });
+userSchema.index({ role: 1 });
+userSchema.index({ isActive: 1 });
+userSchema.index({ deletedAt: 1 });
+userSchema.index({ createdAt: -1 });
 export default mongoose.model("User", userSchema);

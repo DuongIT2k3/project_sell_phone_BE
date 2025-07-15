@@ -37,5 +37,10 @@ const brandSchema = new mongoose.Schema({
     versionKey: false
 }); 
 
+brandSchema.index({ slug: 1 }, { unique: true });
+brandSchema.index({ isActive: 1 });
+brandSchema.index({ deletedAt: 1 });
+brandSchema.index({ createdAt: -1 });
+
 const Brand = mongoose.model("Brand", brandSchema);
 export default Brand;

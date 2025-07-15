@@ -47,5 +47,11 @@ const subCategorySchema = new Schema(
     }
 )
 
+subCategorySchema.index({ slug: 1 }, { unique: true });
+subCategorySchema.index({ categoryParentId: 1 });
+subCategorySchema.index({ isActive: 1 });
+subCategorySchema.index({ deletedAt: 1 });
+subCategorySchema.index({ createdAt: -1 });
+
 const SubCategory = mongoose.model("SubCategory", subCategorySchema)
 export default SubCategory;

@@ -76,5 +76,12 @@ const orderSchema = new mongoose.Schema(
   },
   { timestamps: true, versionKey: false }
 );
+orderSchema.index({ userId: 1 });
+orderSchema.index({ addressId: 1 });
+orderSchema.index({ status: 1 });
+orderSchema.index({ orderCode: 1 }, { unique: true });
+orderSchema.index({ createdAt: -1 });
+orderSchema.index({ deletedAt: 1 });
+
 const Order = mongoose.model("Order", orderSchema);
 export default Order;

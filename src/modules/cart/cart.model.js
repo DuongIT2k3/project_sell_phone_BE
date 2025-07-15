@@ -20,6 +20,9 @@ const cartSchema = new mongoose.Schema(
   }
 );
 
+cartSchema.index({ userId: 1 });
+cartSchema.index({ deletedAt: 1 });
+cartSchema.index({ createdAt: -1 });
 
 const Cart = mongoose.model("Cart", cartSchema);
 export default Cart;

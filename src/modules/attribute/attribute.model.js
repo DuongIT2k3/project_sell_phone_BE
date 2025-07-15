@@ -40,6 +40,11 @@ const attributeSchema = new mongoose.Schema(
   }
 );
 
+attributeSchema.index({ attributeCode: 1 }, { unique: true });
+attributeSchema.index({ isActive: 1 });
+attributeSchema.index({ deletedAt: 1 });
+attributeSchema.index({ createdAt: -1 });
+
 const Attribute = mongoose.model("Attribute", attributeSchema);
 
 export default Attribute;
