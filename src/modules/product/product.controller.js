@@ -131,6 +131,85 @@ export const getListProduct = handleAsync(async (req, res, next) => {
   return res.json(createResponse(true, 200, MESSAGES.PRODUCT.GET_SUCCESS, { products, meta }));
 });
 
+// Admin function to get all products (including inactive ones)
+export const getAllProductsForAdmin = handleAsync(async (req, res, next) => {
+  const { search, brand, subCategory, sortBy = "createdAt", sortOrder = "desc", page = 1, limit = 1000 } = req.query;
+  
+  // Query only excludes deleted products, includes inactive ones for admin
+  const query = { deletedAt: null };
+  
+  if (search) query.$text = { $search: search };
+  if (brand && mongoose.Types.ObjectId.isValid(brand)) query.brand = brand;
+  if (subCategory && mongoose.Types.ObjectId.isValid(subCategory)) query.subCategory = subCategory;
+
+  const pageNum = parseInt(page, 10) || 1;
+  const limitNum = parseInt(limit, 10) || 1000; // Default to large number for admin
+  const skip = (pageNum - 1) * limitNum;
+
+  const aggregateQuery = [
+    { $match: query },
+    {
+      $lookup: {
+        from: "subcategories",
+        localField: "subCategory",
+        foreignField: "_id",
+        as: "subCategory",
+      },
+    },
+    { $unwind: { path: "$subCategory", preserveNullAndEmptyArrays: true } },
+    {
+      $lookup: {
+        from: "brands",
+        localField: "brand",
+        foreignField: "_id",
+        as: "brand",
+      },
+    },
+    { $unwind: { path: "$brand", preserveNullAndEmptyArrays: true } },
+    {
+      $lookup: {
+        from: "productvariants",
+        localField: "_id",
+        foreignField: "productId",
+        pipeline: [{ $match: { deletedAt: null } }],
+        as: "variants",
+      },
+    },
+    {
+      $project: {
+        title: 1,
+        priceDefault: 1,
+        subCategory: { title: "$subCategory.title", _id: "$subCategory._id" },
+        brand: { title: "$brand.title", _id: "$brand._id" },
+        description: 1,
+        slug: 1,
+        seoTitle: 1,
+        seoDescription: 1,
+        isActive: 1,
+        thumbnail: 1,
+        averageRating: 1,
+        soldCount: 1,
+        variantCount: { $size: "$variants" },
+        createdAt: 1,
+        updatedAt: 1,
+      },
+    },
+    { $sort: { [sortBy]: sortOrder === "asc" ? 1 : -1 } },
+    { $skip: skip },
+    { $limit: limitNum },
+  ];
+
+  const [products, total] = await Promise.all([
+    Product.aggregate(aggregateQuery).exec(),
+    Product.countDocuments(query),
+  ]);
+
+  // Don't return 404 for admin, return empty array instead
+  const totalPages = Math.ceil(total / limitNum);
+  const meta = { total, page: pageNum, limit: limitNum, totalPages };
+  return res.json(createResponse(true, 200, total > 0 ? MESSAGES.PRODUCT.GET_SUCCESS : "No products found", { products, meta }));
+});
+
 export const getDetailProduct = handleAsync(async (req, res, next) => {
   const { id } = req.params;
   if (!mongoose.Types.ObjectId.isValid(id)) {
