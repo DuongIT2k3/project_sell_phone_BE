@@ -14,28 +14,28 @@ const router = express.Router();
 // Upload ảnh đơn
 router.post('/single', uploadSingleImage, validateImageType, handleAsync(async (req, res) => {
   if (!req.uploadedImage) {
-    return res.status(400).json(createResponse(false, 'Không có file ảnh được upload'));
+    return res.status(400).json(createResponse(false, 400, 'Không có file ảnh được upload', null));
   }
 
-  return res.status(200).json(createResponse(true, 'Upload ảnh thành công', req.uploadedImage));
+  return res.status(200).json(createResponse(true, 200, 'Upload ảnh thành công', req.uploadedImage));
 }));
 
 // Upload nhiều ảnh
 router.post('/multiple', uploadMultipleImages, validateImageType, handleAsync(async (req, res) => {
   if (!req.uploadedImages || req.uploadedImages.length === 0) {
-    return res.status(400).json(createResponse(false, 'Không có file ảnh được upload'));
+    return res.status(400).json(createResponse(false, 400, 'Không có file ảnh được upload', null));
   }
 
-  return res.status(200).json(createResponse(true, 'Upload ảnh thành công', req.uploadedImages));
+  return res.status(200).json(createResponse(true, 200, 'Upload ảnh thành công', req.uploadedImages));
 }));
 
 // Upload thumbnail
 router.post('/thumbnail', uploadThumbnailImage, validateImageType, handleAsync(async (req, res) => {
   if (!req.uploadedThumbnail) {
-    return res.status(400).json(createResponse(false, 'Không có file thumbnail được upload'));
+    return res.status(400).json(createResponse(false, 400, 'Không có file thumbnail được upload', null));
   }
 
-  return res.status(200).json(createResponse(true, 'Upload thumbnail thành công', req.uploadedThumbnail));
+  return res.status(200).json(createResponse(true, 200, 'Upload thumbnail thành công', req.uploadedThumbnail));
 }));
 
 // Xóa ảnh

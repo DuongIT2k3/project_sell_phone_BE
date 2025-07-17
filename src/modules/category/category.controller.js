@@ -39,13 +39,9 @@ export const getListCategory = handleAsync(async (req, res, next) => {
         Category.countDocuments({ deletedAt: null })
     ]);
     
-    if (!data || data.length === 0) {
-        return next(createError(404, MESSAGES.CATEGORY.NOT_FOUND));
-    }
-    
     const totalPages = Math.ceil(total / limitNum);
     const meta = { total, page: pageNum, limit: limitNum, totalPages };
-    return res.json(createResponse(true, 200, MESSAGES.CATEGORY.GET_SUCCESS, { data, meta }));
+    return res.json(createResponse(true, 200, MESSAGES.CATEGORY.GET_SUCCESS, { data: data || [], meta }));
 });
 
 export const getDetailCategory = handleAsync(async (req, res, next) => {

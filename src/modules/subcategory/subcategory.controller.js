@@ -9,16 +9,16 @@ import Product from "../product/product.model.js";
 import Banner from "../banner/banner.model.js";
 
 export const createSubCategory = handleAsync(async (req, res, next) => {
-  const { title, slug, parentCategoryId } = req.body;
-  if (!title || !slug || !parentCategoryId) {
+  const { title, slug, categoryParentId } = req.body;
+  if (!title || !slug || !categoryParentId) {
     return next(createError(400, MESSAGES.SUBCATEGORY.MISSING_FIELDS));
   }
-  if (!mongoose.Types.ObjectId.isValid(parentCategoryId)) {
+  if (!mongoose.Types.ObjectId.isValid(categoryParentId)) {
     return next(createError(400, MESSAGES.SUBCATEGORY.INVALID_PARENT_ID));
   }
   
   const [category, existing] = await Promise.all([
-    Category.findOne({ _id: parentCategoryId, deletedAt: null }),
+    Category.findOne({ _id: categoryParentId, deletedAt: null }),
     SubCategory.findOne({ $or: [{ title }, { slug }], deletedAt: null })
   ]);
   
@@ -40,14 +40,14 @@ export const createSubCategory = handleAsync(async (req, res, next) => {
 
 
 export const getListSubCategory = handleAsync(async (req, res, next) => {
-  const { parentCategoryId, page = 1, limit = 10 } = req.query;
+  const { categoryParentId, page = 1, limit = 10 } = req.query;
   const filter = { deletedAt: null };
   
-  if (parentCategoryId) {
-    if (!mongoose.Types.ObjectId.isValid(parentCategoryId)) {
+  if (categoryParentId) {
+    if (!mongoose.Types.ObjectId.isValid(categoryParentId)) {
       return next(createError(400, MESSAGES.SUBCATEGORY.INVALID_PARENT_ID));
     }
-    filter.parentCategoryId = parentCategoryId;
+    filter.categoryParentId = categoryParentId;
   }
   
   const pageNum = parseInt(page, 10) || 1;
@@ -56,20 +56,16 @@ export const getListSubCategory = handleAsync(async (req, res, next) => {
   
   const [data, total] = await Promise.all([
     SubCategory.find(filter)
-      .select("parentCategoryId title logoUrl description slug seoTitle seoDescription isActive")
-      .populate("parentCategoryId", "title")
+      .select("categoryParentId title logoUrl description slug seoTitle seoDescription isActive")
+      .populate("categoryParentId", "title")
       .skip(skip)
       .limit(limitNum),
     SubCategory.countDocuments(filter)
   ]);
   
-  if (data.length === 0) {
-    return next(createError(404, MESSAGES.SUBCATEGORY.NOT_FOUND));
-  }
-  
   const totalPages = Math.ceil(total / limitNum);
   const meta = { total, page: pageNum, limit: limitNum, totalPages };
-  return res.json(createResponse(true, 200, MESSAGES.SUBCATEGORY.GET_SUCCESS, { data, meta }));
+  return res.json(createResponse(true, 200, MESSAGES.SUBCATEGORY.GET_SUCCESS, { data: data || [], meta }));
 });
 
 export const getDetailSubCategory = handleAsync(async (req, res, next) => {
@@ -78,8 +74,8 @@ export const getDetailSubCategory = handleAsync(async (req, res, next) => {
     return next(createError(400, MESSAGES.SUBCATEGORY.INVALID_ID));
   }
   const data = await SubCategory.findOne({ _id: id, deletedAt: null })
-    .select("parentCategoryId title logoUrl description slug seoTitle seoDescription isActive")
-    .populate("parentCategoryId", "title");
+    .select("categoryParentId title logoUrl description slug seoTitle seoDescription isActive")
+    .populate("categoryParentId", "title");
   if (!data) {
     return next(createError(404, MESSAGES.SUBCATEGORY.NOT_FOUND));
   }
@@ -88,11 +84,11 @@ export const getDetailSubCategory = handleAsync(async (req, res, next) => {
 
 export const updateSubCategory = handleAsync(async (req, res, next) => {
   const { id } = req.params;
-  const { title, slug, parentCategoryId } = req.body;
+  const { title, slug, categoryParentId } = req.body;
   if (!mongoose.Types.ObjectId.isValid(id)) {
     return next(createError(400, MESSAGES.SUBCATEGORY.INVALID_ID));
   }
-  if (parentCategoryId && !mongoose.Types.ObjectId.isValid(parentCategoryId)) {
+  if (categoryParentId && !mongoose.Types.ObjectId.isValid(categoryParentId)) {
     return next(createError(400, MESSAGES.SUBCATEGORY.INVALID_PARENT_ID));
   }
   
@@ -103,8 +99,8 @@ export const updateSubCategory = handleAsync(async (req, res, next) => {
   }
   
   // Validate parent category if provided
-  if (parentCategoryId) {
-    const category = await Category.findOne({ _id: parentCategoryId, deletedAt: null });
+  if (categoryParentId) {
+    const category = await Category.findOne({ _id: categoryParentId, deletedAt: null });
     if (!category) {
       return next(createError(404, MESSAGES.CATEGORY.NOT_FOUND));
     }
@@ -131,8 +127,8 @@ export const updateSubCategory = handleAsync(async (req, res, next) => {
     { ...req.body, updatedAt: new Date() },
     { new: true }
   )
-    .select("parentCategoryId title logoUrl description slug seoTitle seoDescription isActive")
-    .populate("parentCategoryId", "title");
+    .select("categoryParentId title logoUrl description slug seoTitle seoDescription isActive")
+    .populate("categoryParentId", "title");
   
   return res.json(createResponse(true, 200, MESSAGES.SUBCATEGORY.UPDATE_SUCCESS, data));
 });
@@ -183,7 +179,7 @@ export const softDeleteSubCategory = handleAsync(async (req, res, next) => {
     { _id: id, deletedAt: null },
     { deletedAt: new Date(), isActive: false, updatedAt: new Date() },
     { new: true }
-  ).select("parentCategoryId title logoUrl description slug seoTitle seoDescription isActive deletedAt");
+  ).select("categoryParentId title logoUrl description slug seoTitle seoDescription isActive deletedAt");
   
   return res.json(createResponse(true, 200, MESSAGES.SUBCATEGORY.SOFT_DELETE_SUCCESS, data));
 });
@@ -198,8 +194,8 @@ export const restoreSubCategory = handleAsync(async (req, res, next) => {
     { deletedAt: null, isActive: true, updatedAt: new Date() },
     { new: true }
   )
-    .select("parentCategoryId title logoUrl description slug seoTitle seoDescription isActive")
-    .populate("parentCategoryId", "title");
+    .select("categoryParentId title logoUrl description slug seoTitle seoDescription isActive")
+    .populate("categoryParentId", "title");
   if (!data) {
     return next(createError(404, MESSAGES.SUBCATEGORY.NOT_FOUND));
   }
