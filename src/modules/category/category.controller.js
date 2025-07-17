@@ -26,17 +26,21 @@ export const createCategory = handleAsync(async (req, res, next) => {
 });
 
 export const getListCategory = handleAsync(async (req, res, next) => {
-    const { page = 1, limit = 10 } = req.query;
+    const { page = 1, limit = 10, includeDeleted = false } = req.query;
     const pageNum = parseInt(page, 10) || 1;
     const limitNum = parseInt(limit, 10) || 10;
     const skip = (pageNum - 1) * limitNum;
     
+    // Build filter based on includeDeleted parameter
+    const filter = includeDeleted === 'true' ? {} : { deletedAt: null };
+    
     const [data, total] = await Promise.all([
-        Category.find({ deletedAt: null })
-            .select("title logoUrl description slug seoTitle seoDescription isActive")
+        Category.find(filter)
+            .select("title logoUrl description slug seoTitle seoDescription isActive deletedAt createdAt updatedAt")
             .skip(skip)
-            .limit(limitNum),
-        Category.countDocuments({ deletedAt: null })
+            .limit(limitNum)
+            .sort({ createdAt: -1 }),
+        Category.countDocuments(filter)
     ]);
     
     const totalPages = Math.ceil(total / limitNum);
