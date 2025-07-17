@@ -6,7 +6,8 @@ import {
     getUserById,
     updateUser,
     deactivateUser,
-    activateUser
+    activateUser,
+    getUserStatistics
 } from "./user.controller.js";
 import  validBodyRequest  from "../../common/middlewares/validBodyRequest.js";
 import  restrict  from "../../common/middlewares/restrict.js";
@@ -23,6 +24,7 @@ userRouter.get("/profile", getProfile);
 userRouter.put("/profile", validBodyRequest(updateProfileSchema), updateProfile);
 
 // Admin routes - quản lý users
+userRouter.get("/statistics", restrict(["admin", "superAdmin"]), getUserStatistics);
 userRouter.get("/", restrict(["admin", "superAdmin"]), getAllUsers);
 userRouter.get("/:id", restrict(["admin", "superAdmin"]), getUserById);
 userRouter.put("/:id", restrict(["admin", "superAdmin"]), validBodyRequest(updateUserSchema), updateUser);

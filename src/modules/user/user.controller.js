@@ -173,3 +173,44 @@ export const activateUser = handleAsync(async (req, res, next) => {
 
     return createResponse(res, 200, MESSAGES.USER.ACTIVATE_SUCCESS, null);
 });
+
+// Lấy thống kê users (Admin only)
+export const getUserStatistics = handleAsync(async (req, res, next) => {
+    const totalUsers = await User.countDocuments();
+    const activeUsers = await User.countDocuments({ isActive: true });
+    const inactiveUsers = await User.countDocuments({ isActive: false });
+    
+    const adminUsers = await User.countDocuments({ role: 'admin' });
+    const memberUsers = await User.countDocuments({ role: 'member' });
+    const superAdminUsers = await User.countDocuments({ role: 'superAdmin' });
+    
+    // Thống kê theo tháng (12 tháng gần nhất)
+    const monthlyStats = [];
+    for (let i = 11; i >= 0; i--) {
+        const date = new Date();
+        date.setMonth(date.getMonth() - i);
+        const startOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
+        const endOfMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+        
+        const count = await User.countDocuments({
+            createdAt: { $gte: startOfMonth, $lte: endOfMonth }
+        });
+        
+        monthlyStats.push({
+            month: startOfMonth.toISOString().substring(0, 7), // YYYY-MM format
+            count
+        });
+    }
+    
+    const statistics = {
+        totalUsers,
+        activeUsers,
+        inactiveUsers,
+        adminUsers,
+        memberUsers,
+        superAdminUsers,
+        monthlyRegistrations: monthlyStats
+    };
+
+    return createResponse(res, 200, "Lấy thống kê users thành công", statistics);
+});
