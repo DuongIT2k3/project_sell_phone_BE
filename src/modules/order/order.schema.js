@@ -36,8 +36,24 @@ export const getOrdersQuerySchema = z.object({
         "Pending",
         "Processing", 
         "Shipping",
-        "Completed",
-        "Cancelled",
-        "Returned"
+        "Delivered",
+        "Cancelled"
     ]).optional()
+});
+
+// Schema cho cập nhật trạng thái đơn hàng (Admin)
+export const updateOrderStatusSchema = z.object({
+    status: z.enum([
+        "Pending",
+        "Processing", 
+        "Shipping",
+        "Delivered",
+        "Cancelled"
+    ], {
+        required_error: "Trạng thái đơn hàng là bắt buộc",
+        invalid_type_error: "Trạng thái đơn hàng không hợp lệ"
+    }),
+    note: z.string()
+        .max(500, "Ghi chú không được vượt quá 500 ký tự")
+        .optional()
 });

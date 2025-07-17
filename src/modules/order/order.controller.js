@@ -472,3 +472,278 @@ export const handlPayOsWebhook = handleAsync(async (req, res) => {
   }
   return res.status(200).json(null);
 });
+
+// Admin APIs - Quản lý đơn hàng
+// Lấy tất cả đơn hàng (Admin)
+export const getAllOrders = handleAsync(async (req, res, next) => {
+  const { page = 1, limit = 10, status, paymentStatus, userId, fromDate, toDate } = req.query;
+
+  const skip = (page - 1) * limit;
+  const query = {};
+
+  // Filters
+  if (status) query.status = status;
+  if (paymentStatus) query.paymentStatus = paymentStatus;
+  if (userId && mongoose.Types.ObjectId.isValid(userId)) {
+    query.userId = new mongoose.Types.ObjectId(userId);
+  }
+  
+  // Date range filter
+  if (fromDate || toDate) {
+    query.createdAt = {};
+    if (fromDate) query.createdAt.$gte = new Date(fromDate);
+    if (toDate) query.createdAt.$lte = new Date(toDate);
+  }
+
+  const [orders, total] = await Promise.all([
+    Order.aggregate([
+      { $match: query },
+      {
+        $lookup: {
+          from: "users",
+          localField: "userId",
+          foreignField: "_id",
+          as: "user"
+        }
+      },
+      {
+        $lookup: {
+          from: "orderproducts",
+          localField: "_id",
+          foreignField: "orderId",
+          as: "products"
+        }
+      },
+      {
+        $lookup: {
+          from: "products",
+          localField: "products.productId",
+          foreignField: "_id",
+          as: "productDetails"
+        }
+      },
+      {
+        $addFields: {
+          user: { $arrayElemAt: ["$user", 0] },
+          totalProducts: { $size: "$products" }
+        }
+      },
+      {
+        $project: {
+          "user.password": 0,
+          "user.refreshToken": 0
+        }
+      },
+      { $sort: { createdAt: -1 } },
+      { $skip: skip },
+      { $limit: parseInt(limit) }
+    ]),
+    Order.countDocuments(query)
+  ]);
+
+  const meta = {
+    total,
+    page: parseInt(page),
+    limit: parseInt(limit),
+    totalPages: Math.ceil(total / limit)
+  };
+
+  return createResponse(res, 200, MESSAGES.ORDER.GET_SUCCESS, { orders, meta });
+});
+
+// Lấy chi tiết đơn hàng (Admin)
+export const getOrderByIdAdmin = handleAsync(async (req, res, next) => {
+  const { id } = req.params;
+
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return next(createError(400, MESSAGES.ORDER.INVALID_ID));
+  }
+
+  const order = await Order.aggregate([
+    {
+      $match: { _id: new mongoose.Types.ObjectId(id) }
+    },
+    {
+      $lookup: {
+        from: "users",
+        localField: "userId",
+        foreignField: "_id",
+        as: "user"
+      }
+    },
+    {
+      $lookup: {
+        from: "orderproducts",
+        localField: "_id",
+        foreignField: "orderId",
+        as: "products"
+      }
+    },
+    {
+      $lookup: {
+        from: "products",
+        localField: "products.productId",
+        foreignField: "_id",
+        as: "productDetails"
+      }
+    },
+    {
+      $lookup: {
+        from: "productvariants",
+        localField: "products.productVariantId",
+        foreignField: "_id",
+        as: "variantDetails"
+      }
+    },
+    {
+      $lookup: {
+        from: "useraddresses",
+        localField: "addressId",
+        foreignField: "_id",
+        as: "address"
+      }
+    },
+    {
+      $addFields: {
+        user: { $arrayElemAt: ["$user", 0] },
+        address: { $arrayElemAt: ["$address", 0] }
+      }
+    },
+    {
+      $project: {
+        "user.password": 0,
+        "user.refreshToken": 0
+      }
+    }
+  ]);
+
+  if (!order || order.length === 0) {
+    return next(createError(404, MESSAGES.ORDER.NOT_FOUND));
+  }
+
+  return createResponse(res, 200, MESSAGES.ORDER.GET_BY_ID_SUCCESS, order[0]);
+});
+
+// Cập nhật trạng thái đơn hàng (Admin)
+export const updateOrderStatus = handleAsync(async (req, res, next) => {
+  const { id } = req.params;
+  const { status, note } = req.body;
+
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return next(createError(400, MESSAGES.ORDER.INVALID_ID));
+  }
+
+  const validStatuses = ["Pending", "Processing", "Shipping", "Delivered", "Cancelled"];
+  if (!validStatuses.includes(status)) {
+    return next(createError(400, "Trạng thái đơn hàng không hợp lệ"));
+  }
+
+  const order = await Order.findById(id);
+  if (!order) {
+    return next(createError(404, MESSAGES.ORDER.NOT_FOUND));
+  }
+
+  // Không cho phép cập nhật đơn hàng đã giao hoặc đã hủy
+  if (order.status === "Delivered" || order.status === "Cancelled") {
+    return next(createError(400, "Không thể cập nhật đơn hàng đã giao hoặc đã hủy"));
+  }
+
+  const oldStatus = order.status;
+  order.status = status;
+  if (note) order.adminNote = note;
+
+  // Nếu hủy đơn hàng, hoàn lại tồn kho
+  if (status === "Cancelled" && oldStatus !== "Cancelled") {
+    const session = await mongoose.startSession();
+    session.startTransaction();
+
+    try {
+      order.paymentStatus = "CANCELLED";
+      await order.save({ session });
+
+      // Hoàn lại tồn kho
+      const orderProducts = await OrderProduct.find({ orderId: order._id });
+      for (const item of orderProducts) {
+        await ProductVariant.findByIdAndUpdate(
+          item.productVariantId,
+          { $inc: { stock: item.quantity } },
+          { session }
+        );
+      }
+
+      await session.commitTransaction();
+    } catch (error) {
+      await session.abortTransaction();
+      throw error;
+    } finally {
+      session.endSession();
+    }
+  } else {
+    await order.save();
+  }
+
+  return createResponse(res, 200, "Cập nhật trạng thái đơn hàng thành công", order);
+});
+
+// Thống kê đơn hàng (Admin)
+export const getOrderStatistics = handleAsync(async (req, res, next) => {
+  const { fromDate, toDate } = req.query;
+  
+  const dateFilter = {};
+  if (fromDate || toDate) {
+    dateFilter.createdAt = {};
+    if (fromDate) dateFilter.createdAt.$gte = new Date(fromDate);
+    if (toDate) dateFilter.createdAt.$lte = new Date(toDate);
+  }
+
+  const [
+    totalOrders,
+    totalRevenue,
+    statusStats,
+    paymentStats,
+    recentOrders
+  ] = await Promise.all([
+    // Tổng số đơn hàng
+    Order.countDocuments(dateFilter),
+    
+    // Tổng doanh thu (chỉ đơn hàng đã thanh toán)
+    Order.aggregate([
+      { $match: { ...dateFilter, paid: true } },
+      { $group: { _id: null, total: { $sum: "$totalPrice" } } }
+    ]),
+    
+    // Thống kê theo trạng thái
+    Order.aggregate([
+      { $match: dateFilter },
+      { $group: { _id: "$status", count: { $sum: 1 } } }
+    ]),
+    
+    // Thống kê theo trạng thái thanh toán
+    Order.aggregate([
+      { $match: dateFilter },
+      { $group: { _id: "$paymentStatus", count: { $sum: 1 } } }
+    ]),
+    
+    // 5 đơn hàng gần nhất
+    Order.find(dateFilter)
+      .populate('userId', 'name email')
+      .sort({ createdAt: -1 })
+      .limit(5)
+  ]);
+
+  const statistics = {
+    totalOrders,
+    totalRevenue: totalRevenue[0]?.total || 0,
+    statusStats: statusStats.reduce((acc, item) => {
+      acc[item._id] = item.count;
+      return acc;
+    }, {}),
+    paymentStats: paymentStats.reduce((acc, item) => {
+      acc[item._id] = item.count;
+      return acc;
+    }, {}),
+    recentOrders
+  };
+
+  return createResponse(res, 200, "Lấy thống kê đơn hàng thành công", statistics);
+});
