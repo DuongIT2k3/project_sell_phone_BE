@@ -46,6 +46,15 @@ const userSchema = new mongoose.Schema({
         type: Boolean,    
         default: true,
     },
+    deletedAt: {
+        type: Date,
+        default: null
+    },
+    deletedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        default: null
+    },
     social: {
         facebook: {
             type: String,
@@ -65,6 +74,21 @@ const userSchema = new mongoose.Schema({
 {
     versionKey: false,
     timestamps: true,
-}
-)
+});
+
+// Add index for soft delete queries
+userSchema.index({ deletedAt: 1 });
+
+// Virtual for checking if deleted
+userSchema.virtual('isDeleted').get(function() {
+    return this.deletedAt !== null;
+});
+
+// Pre-find middleware to exclude deleted users by default
+userSchema.pre(/^find/, function() {
+    if (!this.getOptions().includeDeleted) {
+        this.where({ deletedAt: null });
+    }
+});
+
 export default mongoose.model("User", userSchema);

@@ -214,3 +214,181 @@ export const getUserStatistics = handleAsync(async (req, res, next) => {
 
     return createResponse(res, 200, "Lấy thống kê users thành công", statistics);
 });
+
+// Hard delete user (Admin only - permanent deletion)
+export const deleteUser = handleAsync(async (req, res, next) => {
+    const { id } = req.params;
+    const currentUser = req.user;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+        return next(createError(400, MESSAGES.USER.INVALID_ID));
+    }
+
+    // Security checks
+    if (id === currentUser._id.toString()) {
+        return next(createError(400, "Không thể xóa chính mình"));
+    }
+
+    const user = await User.findById(id);
+    if (!user) {
+        return next(createError(404, MESSAGES.USER.NOT_FOUND));
+    }
+
+    if (user.role === 'superAdmin' && currentUser.role !== 'superAdmin') {
+        return next(createError(403, "Không thể xóa Super Admin"));
+    }
+
+    await User.findByIdAndDelete(id);
+    return createResponse(res, 200, "Xóa user vĩnh viễn thành công", null);
+});
+
+// Soft delete user (Admin only)
+export const softDeleteUser = handleAsync(async (req, res, next) => {
+    const { id } = req.params;
+    const currentUser = req.user;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+        return next(createError(400, MESSAGES.USER.INVALID_ID));
+    }
+
+    if (id === currentUser._id.toString()) {
+        return next(createError(400, "Không thể xóa chính mình"));
+    }
+
+    const user = await User.findById(id);
+    if (!user) {
+        return next(createError(404, MESSAGES.USER.NOT_FOUND));
+    }
+
+    if (user.deletedAt) {
+        return next(createError(400, "User đã bị xóa"));
+    }
+
+    if (user.role === 'superAdmin' && currentUser.role !== 'superAdmin') {
+        return next(createError(403, "Không thể xóa Super Admin"));
+    }
+
+    user.deletedAt = new Date();
+    user.deletedBy = currentUser._id;
+    await user.save();
+
+    return createResponse(res, 200, "Xóa mềm user thành công", null);
+});
+
+// Restore deleted user (Admin only)
+export const restoreUser = handleAsync(async (req, res, next) => {
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+        return next(createError(400, MESSAGES.USER.INVALID_ID));
+    }
+
+    const user = await User.findOne({ 
+        _id: id, 
+        deletedAt: { $ne: null } 
+    }).setOptions({ includeDeleted: true });
+    
+    if (!user) {
+        return next(createError(404, "User đã xóa không tồn tại"));
+    }
+
+    user.deletedAt = null;
+    user.deletedBy = null;
+    await user.save();
+
+    return createResponse(res, 200, "Khôi phục user thành công", user);
+});
+
+// Get deleted users (Admin only)
+export const getDeletedUsers = handleAsync(async (req, res, next) => {
+    const { page = 1, limit = 10, search, role } = req.query;
+    const skip = (page - 1) * limit;
+    
+    const query = { deletedAt: { $ne: null } };
+    
+    // Search theo fullName hoặc email
+    if (search) {
+        query.$or = [
+            { fullName: { $regex: search, $options: 'i' } },
+            { email: { $regex: search, $options: 'i' } }
+        ];
+    }
+
+    // Filter theo role
+    if (role) {
+        query.role = role;
+    }
+
+    const [users, total] = await Promise.all([
+        User.find(query)
+            .setOptions({ includeDeleted: true })
+            .populate('deletedBy', 'fullName email')
+            .select('-password -refreshToken')
+            .sort({ deletedAt: -1 })
+            .skip(skip)
+            .limit(parseInt(limit)),
+        User.countDocuments(query)
+    ]);
+
+    const meta = {
+        total,
+        page: parseInt(page),
+        limit: parseInt(limit),
+        totalPages: Math.ceil(total / limit)
+    };
+
+    return createResponse(res, 200, "Lấy danh sách user đã xóa thành công", { users, meta });
+});
+
+// Bulk soft delete users (Admin only)
+export const bulkSoftDeleteUsers = handleAsync(async (req, res, next) => {
+    const { ids } = req.body;
+    const currentUser = req.user;
+
+    if (!Array.isArray(ids) || ids.length === 0) {
+        return next(createError(400, "Vui lòng cung cấp danh sách ID"));
+    }
+
+    // Security check - không thể xóa chính mình
+    if (ids.includes(currentUser._id.toString())) {
+        return next(createError(400, "Không thể xóa chính mình"));
+    }
+
+    const users = await User.find({ _id: { $in: ids } });
+    
+    // Check permissions
+    for (const user of users) {
+        if (user.role === 'superAdmin' && currentUser.role !== 'superAdmin') {
+            return next(createError(403, `Không thể xóa Super Admin: ${user.fullName}`));
+        }
+    }
+
+    await User.updateMany(
+        { _id: { $in: ids }, deletedAt: null },
+        { 
+            deletedAt: new Date(),
+            deletedBy: currentUser._id
+        }
+    );
+
+    return createResponse(res, 200, `Xóa mềm ${users.length} users thành công`, null);
+});
+
+// Bulk restore users (Admin only)
+export const bulkRestoreUsers = handleAsync(async (req, res, next) => {
+    const { ids } = req.body;
+
+    if (!Array.isArray(ids) || ids.length === 0) {
+        return next(createError(400, "Vui lòng cung cấp danh sách ID"));
+    }
+
+    const result = await User.updateMany(
+        { _id: { $in: ids }, deletedAt: { $ne: null } },
+        { 
+            deletedAt: null,
+            deletedBy: null
+        }
+    );
+
+    return createResponse(res, 200, `Khôi phục ${result.modifiedCount} users thành công`, null);
+});
