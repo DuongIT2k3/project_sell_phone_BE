@@ -15,7 +15,7 @@ const cartProductSchema = new mongoose.Schema(
     variantId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "ProductVariant",
-      required: true,
+      required: false, // Không bắt buộc vì không phải tất cả sản phẩm đều có variant
     },
     quantity: {
       type: Number,
@@ -23,6 +23,11 @@ const cartProductSchema = new mongoose.Schema(
       min: 1,
     },
     price: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+    totalPrice: {
       type: Number,
       required: true,
       min: 0,

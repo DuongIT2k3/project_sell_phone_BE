@@ -16,6 +16,7 @@ const productVariantRoutes = Router();
 
 
 productVariantRoutes.get("/", getListProductVariants);
+productVariantRoutes.get("/product/:productId", getListProductVariants); // Route để lấy variants theo productId
 productVariantRoutes.get("/:id", getProductVariantById);
 
 

@@ -36,7 +36,10 @@ export const createProductVariant = handleAsync(async (req, res, next) => {
 });
 
 export const getListProductVariants = handleAsync(async (req, res, next) => {
-  const { productId, color, capacity, page = 1, limit = 10 } = req.query;
+  const { color, capacity, page = 1, limit = 10 } = req.query;
+  const { productId: paramProductId } = req.params; // Lấy productId từ params
+  const productId = paramProductId || req.query.productId; // Ưu tiên params trước
+  
   const query = { deletedAt: null };
   
   if (productId) {
@@ -46,15 +49,11 @@ export const getListProductVariants = handleAsync(async (req, res, next) => {
     query.productId = productId;
   }
   if (color) {
-    if (!mongoose.Types.ObjectId.isValid(color)) {
-      return next(createError(400, MESSAGES.PRODUCT_VARIANT.INVALID_COLOR_ID));
-    }
+    // Color là string, không cần validate ObjectId
     query.color = color;
   }
   if (capacity) {
-    if (!mongoose.Types.ObjectId.isValid(capacity)) {
-      return next(createError(400, MESSAGES.PRODUCT_VARIANT.INVALID_CAPACITY_ID));
-    }
+    // Capacity là string, không cần validate ObjectId
     query.capacity = capacity;
   }
   
@@ -66,20 +65,17 @@ export const getListProductVariants = handleAsync(async (req, res, next) => {
     ProductVariant.find(query)
       .select("productId color capacity price sku stock soldCount imageUrls oldPrice")
       .populate("productId", "title")
-      .populate("color", "value")
-      .populate("capacity", "value")
       .skip(skip)
       .limit(limitNum),
     ProductVariant.countDocuments(query)
   ]);
   
-  if (!data || data.length === 0) {
-    return next(createError(404, MESSAGES.PRODUCT_VARIANT.NOT_FOUND));
-  }
-  
+  // Trả về dữ liệu ngay cả khi mảng rỗng - không phải lỗi
   const totalPages = Math.ceil(total / limitNum);
   const meta = { total, page: pageNum, limit: limitNum, totalPages };
-  return res.json(createResponse(true, 200, MESSAGES.PRODUCT_VARIANT.GET_SUCCESS, { data, meta }));
+  return res.json(createResponse(true, 200, 
+    data.length > 0 ? MESSAGES.PRODUCT_VARIANT.GET_SUCCESS : "Không có biến thể nào", 
+    { data, meta }));
 });
 
 export const getProductVariantById = handleAsync(async (req, res, next) => {
@@ -89,9 +85,7 @@ export const getProductVariantById = handleAsync(async (req, res, next) => {
   }
   const data = await ProductVariant.findOne({ _id: id, deletedAt: null })
     .select("productId color capacity price sku stock soldCount imageUrls oldPrice")
-    .populate("productId", "title")
-    .populate("color", "value")
-    .populate("capacity", "value");
+    .populate("productId", "title");
   if (!data) {
     return next(createError(404, MESSAGES.PRODUCT_VARIANT.NOT_FOUND));
   }

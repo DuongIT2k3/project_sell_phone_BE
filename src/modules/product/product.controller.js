@@ -217,8 +217,8 @@ export const getDetailProduct = handleAsync(async (req, res, next) => {
   }
   const data = await Product.findOne({ _id: id, deletedAt: null })
     .populate("subCategory", "title _id")
-    .populate("brand", "title _id")
-    .select("title priceDefault subCategory brand description slug seoTitle seoDescription isActive");
+    .populate("brand", "title _id logoUrl")
+    .select("title thumbnail thumbnailPublicId images priceDefault stockTotal subCategory brand description shortDescription specifications slug seoTitle seoDescription isActive averageRating ratingCount tags soldCount");
   if (!data) {
     return next(createError(404, MESSAGES.PRODUCT.NOT_FOUND));
   }

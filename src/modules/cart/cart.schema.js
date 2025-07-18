@@ -1,13 +1,26 @@
 import { z } from "zod";
 
+// Schema cho việc thêm sản phẩm vào giỏ hàng
+export const addToCartSchema = z.object({
+    productId: z.string()
+        .min(1, "Product ID là bắt buộc")
+        .regex(/^[0-9a-fA-F]{24}$/, "Product ID không hợp lệ"),
+    variantId: z.string()
+        .regex(/^[0-9a-fA-F]{24}$/, "Variant ID không hợp lệ")
+        .optional(),
+    quantity: z.number()
+        .min(1, "Số lượng phải lớn hơn 0")
+        .max(100, "Số lượng không được vượt quá 100")
+});
+
 // Schema cho việc thêm/cập nhật sản phẩm trong giỏ hàng
 export const updateCartSchema = z.object({
     productId: z.string()
         .min(1, "Product ID là bắt buộc")
         .regex(/^[0-9a-fA-F]{24}$/, "Product ID không hợp lệ"),
     variantId: z.string()
-        .min(1, "Variant ID là bắt buộc")
-        .regex(/^[0-9a-fA-F]{24}$/, "Variant ID không hợp lệ"),
+        .regex(/^[0-9a-fA-F]{24}$/, "Variant ID không hợp lệ")
+        .optional(),
     quantity: z.number()
         .min(1, "Số lượng phải lớn hơn 0")
         .max(100, "Số lượng không được vượt quá 100")
